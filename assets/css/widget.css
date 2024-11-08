@@ -1,0 +1,250 @@
+  * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+  }
+
+  .cta-section {
+      padding: 10px;
+      font-size: 18px;
+      text-align: center;
+  }
+
+  .service-icons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 10px;
+  }
+
+  .service-icons i {
+      font-size: 24px;
+      color: #2fa44f;
+  }
+
+  /* Base styles   BOX SHADOW FOR .travel-package-card */
+  .travel-package-card {
+      height: 302px;
+      border: 1px solid rgb(21, 21, 20);
+      display: flex;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin: 20px auto;
+      max-width: 900px;
+      width: 700px;
+  }
+
+
+  .package-image-section {
+      position: relative;
+      height: 293px;
+      flex: 1;
+      min-width: 250px;
+  }
+
+  .package-image {
+
+      object-fit: cover;
+      min-height: 300px;
+  }
+
+  .discount-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      color: #333;
+      font-size: clamp(12px, 2vw, 14px);
+  }
+
+  .features-row {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+  }
+
+  .feature-badge {
+      background: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: clamp(11px, 1.5vw, 14px);
+      color: #333;
+      white-space: nowrap;
+  }
+
+  .package-details {
+      flex: 1;
+      padding: clamp(15px, 3vw, 25px);
+      min-width: 250px;
+  }
+
+  .package-title {
+      font-size: clamp(16px, 2.5vw, 20px);
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      line-height: 1.3;
+  }
+
+  .package-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      color: #666;
+      margin-bottom: 15px;
+      font-size: clamp(12px, 1.8vw, 14px);
+  }
+
+  .price-section {
+      margin: 15px 0;
+  }
+
+  .price {
+      color: #2e8b57;
+      font-size: clamp(20px, 3vw, 24px);
+      font-weight: bold;
+  }
+
+  .original-price {
+      text-decoration: line-through;
+      color: #666;
+      margin-left: 10px;
+      font-size: clamp(14px, 2vw, 16px);
+  }
+
+  .discount-tag {
+      background: #20a397 !important;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: clamp(11px, 1.5vw, 14px);
+      margin-left: 10px;
+  }
+
+  .price-note {
+      font-size: clamp(11px, 1.5vw, 14px);
+      color: #666;
+      margin-top: 5px;
+  }
+
+  .validity,
+  .cities {
+      margin: 12px 0;
+      color: #666;
+      font-size: clamp(12px, 1.8vw, 14px);
+  }
+
+  .action-buttons {
+      display: flex;
+      gap: 12px;
+
+      /* flex-wrap: wrap; */
+  }
+
+  .view-deal,
+  .check-availability {
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: clamp(12px, 1.8vw, 14px);
+      text-align: center;
+      min-width: 120px;
+  }
+
+  .view-deal {
+      background: transparent;
+      border: 1px solid #ff4d4d;
+      color: #ff4d4d;
+  }
+
+  .check-availability {
+      background: #ff4d4d;
+      border: none;
+      color: white;
+  }
+
+  .feature-badge i {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      flex-direction: column;
+  }
+
+  /* Tablet Responsive */
+  @media (max-width: 768px) {
+      .travel-package-card {
+          flex-direction: column;
+          margin: 15px auto;
+      }
+
+      .package-image-section {
+          height: 250px;
+      }
+
+      .package-image {
+          min-height: unset;
+          height: 250px;
+      }
+
+      .features-row {
+          background: rgba(255, 255, 255, 0.9);
+          padding: 8px;
+          border-radius: 8px;
+      }
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 480px) {
+      .travel-package-card {
+          margin: 10px auto;
+          width: 98%;
+          height: auto;
+      }
+
+      .package-image-section {
+          height: 200px;
+      }
+
+      .package-image {
+          object-fit: cover;
+
+          height: 200px !important;
+      }
+
+      .package-details {
+          padding: 15px;
+      }
+
+      .action-buttons {
+          flex-direction: column;
+          gap: 10px;
+      }
+
+      .view-deal,
+      .check-availability {
+          width: 100%;
+          padding: 12px 20px;
+      }
+
+      .price-section {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 8px;
+      }
+
+      .price-note {
+          width: 100%;
+          margin-top: 8px;
+      }
+  }

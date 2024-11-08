@@ -1,0 +1,236 @@
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Sidebar container */
+.admon-css-sidebar {
+    margin-top: 50px;
+    width: 250px;
+    /* margin-left: 190px; */
+    height: 150vh;
+    /* Full height */
+    background-color: #f7f7f7;
+    border-right: 1px solid #e0e0e0;
+
+
+    top: 0;
+    left: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    /* Enable vertical scrolling */
+}
+
+/* Sidebar list styling */
+.admon-css-sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Sidebar list items */
+.admon-css-sidebar ul li {
+    margin-bottom: 20px;
+}
+
+/* Sidebar links */
+.admon-css-sidebar ul li a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    font-size: 16px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+/* Active link styling */
+.admon-css-tab-link.active {
+    background-color: #ff6600;
+    color: #fff;
+    border-color: #ff6600;
+}
+
+/* Hover effect for links */
+.admon-css-sidebar ul li a:hover {
+    background-color: #ff6600;
+    color: #fff;
+    border-color: #ff6600;
+}
+
+/* Main content area */
+.admon-css-content {
+    margin-top: -1000px;
+    margin-left: 270px;
+    /* Space for the sidebar */
+    padding: 20px;
+}
+
+/* Hide all sections by default */
+.admon-css-tab-content {
+    display: none;
+}
+
+/* Show only the active section */
+.admon-css-tab-content.active {
+    display: block;
+}
+
+/* Style for labels */
+label {
+    display: block;
+    /* Make labels take the full width */
+    margin-bottom: 5px;
+    /* Space between label and input */
+    font-weight: bold;
+    /* Make labels bold */
+    color: #333;
+    /* Dark color for visibility */
+}
+
+/* Style for input fields */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+textarea {
+    width: 100%;
+    /* Full width */
+    padding: 10px;
+    /* Padding for comfort */
+    margin-bottom: 15px;
+    /* Space between fields */
+    border: 1px solid #ccc;
+    /* Light border */
+    border-radius: 4px;
+    /* Rounded corners */
+    box-sizing: border-box;
+    /* Ensure padding doesn't affect width */
+    font-size: 16px;
+    /* Font size for readability */
+    transition: border-color 0.3s;
+    /* Smooth transition on focus */
+}
+
+/* Style for textarea */
+textarea {
+    resize: vertical;
+    /* Allow vertical resizing only */
+}
+
+/* Focus state for inputs and textareas */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+    border-color: #ff6600;
+    /* Highlight border color */
+    outline: none;
+    /* Remove default outline */
+}
+
+/* Error state styling (optional) */
+input[type="text"].error,
+input[type="email"].error,
+input[type="number"].error,
+input[type="password"].error,
+textarea.error {
+    border-color: red;
+    /* Red border for errors */
+}
+
+/* Base styles for buttons */
+button {
+    padding: 10px 20px;
+    /* Padding for comfort */
+    font-size: 16px;
+    /* Font size for readability */
+    color: #fff;
+    /* Text color */
+    background-color: #ff6600;
+    /* Background color */
+    border: none;
+    /* Remove default border */
+    border-radius: 4px;
+    /* Rounded corners */
+    cursor: pointer;
+    /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    /* Smooth transition */
+}
+
+/* Hover state */
+button:hover {
+    background-color: #e55b00;
+    /* Darken background on hover */
+}
+
+/* Active state */
+button:active {
+    transform: translateY(2px);
+    /* Give a pressed effect */
+}
+
+/* Disabled state */
+button:disabled {
+    background-color: #ccc;
+    /* Light gray background for disabled */
+    color: #999;
+    /* Gray text color */
+    cursor: not-allowed;
+    /* Change cursor */
+}
+
+/* Style for select elements */
+select {
+    width: 100%;
+    /* Full width */
+    padding: 10px;
+    /* Padding for comfort */
+    font-size: 16px;
+    /* Font size for readability */
+    color: #333;
+    /* Text color */
+    background-color: #fff;
+    /* Background color */
+    border: 1px solid #ccc;
+    /* Light border */
+    border-radius: 4px;
+    /* Rounded corners */
+    appearance: none;
+    /* Remove default arrow */
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="10" height="5" viewBox="0 0 10 5"%3E%3Cpolygon points="0,0 5,5 10,0" fill="%23ccc" /%3E%3C/svg%3E');
+    /* Custom arrow */
+    background-repeat: no-repeat;
+    /* No repeat for background */
+    background-position: right 10px center;
+    /* Position the arrow */
+    background-size: 10px;
+    /* Size of the arrow */
+    cursor: pointer;
+    /* Pointer cursor on hover */
+    transition: border-color 0.3s ease;
+    /* Smooth transition */
+}
+
+/* Focus state */
+select:focus {
+    border-color: #ff6600;
+    /* Highlight border color */
+    outline: none;
+    /* Remove default outline */
+}
+
+/* Disabled state */
+select:disabled {
+    background-color: #f0f0f0;
+    /* Light gray background for disabled */
+    color: #999;
+    /* Gray text color */
+    cursor: not-allowed;
+    /* Change cursor */
+}
