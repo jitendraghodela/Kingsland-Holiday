@@ -1,45 +1,118 @@
 <?php
 /*
 Plugin Name: Kingsland Tour Packages
+Plugin URI: https://SERPDIGISOLUTION.com/plugins/kingsland-tour-packages
 Description: A plugin to manage tour packages.
-Version: 1.0
-URI: https://SERPDIGISOLUTION.com
+Version: 1.0.0
+Requires at least: 5.0 
+Tested up to: 6.7
+Requires PHP: 7.2
 Author: Jitendra Kumawat
+Author URI: https://SERPDIGISOLUTION.com/about
+License: GPL v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: kingsland-tour-packages
+
+=== Kingsland Tour Packages ===
+Contributors: jitendraghodela
+Tags: tours, packages, travel
+Requires at least: 5.0
+Tested up to: 6.7
+Stable tag: 1.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
-// Load Elementor
-// At the beginning of your form
+
 
 if (!defined('ABSPATH')) {
     exit;
 }
+// Safe media handling function
+function kingsland_safe_get_attachment($attachment_id)
+{
+    if (!$attachment_id || !is_numeric($attachment_id)) {
+        return false;
+    }
 
-if (!function_exists('get_post_meta')) {
-    require_once(ABSPATH . 'wp-includes/post.php');
+    $attachment = get_post($attachment_id);
+    if (!$attachment) {
+        return false;
+    }
+
+    $metadata = wp_get_attachment_metadata($attachment_id);
+    if (!is_array($metadata)) {
+        $metadata = array();
+    }
+
+    return array(
+        'id' => $attachment_id,
+        'url' => wp_get_attachment_url($attachment_id),
+        'metadata' => $metadata
+    );
+}
+// Load required WordPress dependencies
+function kingsland_load_dependencies()
+{
+    if (!function_exists('get_post_meta')) {
+        require_once(ABSPATH . 'wp-includes/post.php');
+    }
+
+    if (!function_exists('wp_get_attachment_metadata')) {
+        require_once(ABSPATH . 'wp-includes/media.php');
+    }
+
+    if (!function_exists('esc_url')) {
+        require_once(ABSPATH . 'wp-includes/formatting.php');
+    }
+
+    if (!function_exists('checked')) {
+        require_once(ABSPATH . 'wp-includes/general-template.php');
+    }
 }
 
-if (!function_exists('esc_url')) {
-    require_once(ABSPATH . 'wp-includes/formatting.php');
+// Initialize media handling
+function kingsland_init_media()
+{
+    if (is_admin()) {
+        wp_enqueue_media();
+    }
 }
 
-if (!function_exists('esc_attr')) {
-    require_once(ABSPATH . 'wp-includes/formatting.php');
-}
-
-if (!function_exists('checked')) {
-    require_once(ABSPATH . 'wp-includes/general-template.php');
-}
 
 
 function register_kingsland_custom_widget($widgets_manager)
 {
     require_once(__DIR__ . '/widgets/kingsland-travel-package-widget.php');
     $widgets_manager->register(new \Kingsland_Travel_Package_Widget());
+    require_once(__DIR__ . '/widgets/kingsland-grid-widget.php');
+    $widgets_manager->register(new \Kingsland_Grid_Widget());
 }
+
+// Register Widget Assets
+function kingsland_grid_widget_assets()
+{
+    wp_register_style(
+        'kingsland-grid-widget-css',
+        plugins_url('assets/css/kingsland-grid-widget.css', __FILE__),
+        [],
+        '1.0.0'
+    );
+
+    wp_register_script(
+        'kingsland-grid-widget-js',
+        plugins_url('js/kingsland-grid-widget.js', __FILE__),
+        ['jquery'],
+        '1.0.0',
+        true
+    );
+}
+add_action('wp_enqueue_scripts', 'kingsland_grid_widget_assets');
 add_action('elementor/widgets/register', 'register_kingsland_custom_widget');
 
 function enqueue_kingsland_styles()
 {
     wp_enqueue_style('kingsland-widget-style', plugin_dir_url(__FILE__) . 'assets/css/widget.css');
+
     wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 
 }
@@ -126,7 +199,6 @@ function kingsland_register_tour_packages()
         'filter_items_list' => __('Filter items list', 'kingsland-tour-packages'),
     );
 
-
     $args = array(
         'label' => __('Tour Package', 'kingsland-tour-packages'),
         'description' => __('Custom post type for tour packages', 'kingsland-tour-packages'),
@@ -152,6 +224,99 @@ function kingsland_register_tour_packages()
     register_post_type('tour_package', $args);
 }
 add_action('init', 'kingsland_register_tour_packages');
+
+// Add settings page
+function kingsland_add_settings_page()
+{
+    add_submenu_page(
+        'edit.php?post_type=tour_package', // Parent slug
+        'Email Settings',
+        'Email Settings',
+        'manage_options',
+        'kingsland-email-settings',
+        'kingsland_render_settings_page'
+    );
+}
+add_action('admin_menu', 'kingsland_add_settings_page');
+
+// Render settings page
+function kingsland_render_settings_page()
+{
+    ?>
+    <div class="wrap">
+        <!-- how Get User Name OR Password For  -->
+        <h2>Gmail SMTP Configuration</h2>
+        <p>To use Gmail SMTP, you need to:</p>
+        <ol>
+            <li>Enable 2-Step Verification in your Google Account</li>
+            <li>Generate an App Password for this plugin</li>
+            <li>Use your Gmail address as username</li>
+
+        </ol>
+
+        <p>Instructions:</p>
+        <ol>
+            <li>Go to your Google Account settings</li>
+            <li>Search for "App Passwords"</li>
+            <li>Generate a new app password for "Mail"</li>
+            <li>Copy the 16-character password</li>
+        </ol>
+        <h1>Tour Package Email Settings</h1>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('kingsland_email_settings_group');
+            do_settings_sections('kingsland-email-settings');
+            submit_button();
+            ?>
+        </form>
+
+    </div>
+    <?php
+}
+
+// Register settings
+function kingsland_register_settings()
+{
+    register_setting('kingsland_email_settings_group', 'kingsland_email_username');
+    register_setting('kingsland_email_settings_group', 'kingsland_email_password');
+
+    add_settings_section(
+        'kingsland_email_settings_section',
+        'Email Credentials',
+        null,
+        'kingsland-email-settings'
+    );
+
+    add_settings_field(
+        'kingsland_email_username',
+        'Email Username',
+        'kingsland_email_username_callback',
+        'kingsland-email-settings',
+        'kingsland_email_settings_section'
+    );
+
+    add_settings_field(
+        'kingsland_email_password',
+        'Email Password',
+        'kingsland_email_password_callback',
+        'kingsland-email-settings',
+        'kingsland_email_settings_section'
+    );
+}
+add_action('admin_init', 'kingsland_register_settings');
+
+// Callback functions
+function kingsland_email_username_callback()
+{
+    $username = get_option('kingsland_email_username');
+    echo '<input type="text" name="kingsland_email_username" value="' . esc_attr($username) . '" class="regular-text">';
+}
+
+function kingsland_email_password_callback()
+{
+    $password = get_option('kingsland_email_password');
+    echo '<input type="password" name="kingsland_email_password" value="' . esc_attr($password) . '" class="regular-text">';
+}
 
 // Add Meta Boxes for Tour Package Details
 function kingsland_add_tour_package_meta_boxes()
@@ -304,6 +469,9 @@ function kingsland_tour_package_details_callback($post)
             <label for="highlights">Highlights (comma-separated):</label>
             <input type="text" id="highlights" name="highlights" value="<?php echo esc_attr($fields['highlights']); ?>"
                 style="width: 100%" />
+
+
+
         </div>
 
         <div id="gallery" class="admon-css-tab-content">
@@ -354,27 +522,27 @@ function kingsland_tour_package_details_callback($post)
                     // Add new slide
                     $('#add-slide').click(function () {
                         var newSlide = `
-                                                                                                                                                                                                                                                                                                                                                                            <div class="slideshow-item" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; display:flex; gap:20px">
-                                                                                                                                                                                                                                                                                                                                                                            <img src="" alt="Slideshow Image" style="max-width: 25%; height: 25%; margin-top: 10px;">
-                                                                                                                                                                                                                                                                                                                                                                            <p>
-                                                                                                                                                                                                                                                                                                                                                                            <label>Caption:</label><br>
-                                                                                                                                                                                                                                                                                                                                                                            <input type="text" name="slideshow_captions[]" value="" style="width: 100%;">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="slideshow-item" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; display:flex; gap:20px">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <img src="" alt="Slideshow Image" style="max-width: 25%; height: 25%; margin-top: 10px;">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <p>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <label>Caption:</label><br>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="text" name="slideshow_captions[]" value="" style="width: 100%;">
                              
-                                                                                                                                                                                                                                                                                                                                                                            <input type="hidden" name="slideshow_images[]" value="">
-                                                                                                                                                                                                                                                                                                                                                                            <button type="button" class="upload-image button" style="margin-top: 5px;">Upload Image</button>
-                                                                                                                                                                                                                                                                                                                                                                            <button type="button" class="remove-slide button" style="width: 100px;height: 20px;margin-left: 5px;margin-top: 5px;">Remove Slide</button>
-                                                                                                                                                                                                                                                                                                                                                                            </p>
-                                                                                                                                                                                                                                                                                                                                                                            <p>
-                                                                                                                                                                                                                                                                                                                                                                            <label>Position:</label><br>
-                                                                                                                                                                                                                                                                                                                                                                            <select name="slideshow_positions[]">
-                                                                                                                                                                                                                                                                                                                                                                            <option value=" ">Top Left</option>
-                                                                                                                                                                                                                                                                                                                                                                            <option value="top-right">Top Right</option>
-                                                                                                                                                                                                                                                                                                                                                                            <option value="bottom-left">Bottom Left</option>
-                                                                                                                                                                                                                                                                                                                                                                            <option value="bottom-right">Bottom Right</option>
-                                                                                                                                                                                                                                                                                                                                                                            <option value="middle">Middle</option>
-                                                                                                                                                                                                                                                                                                                                                                            </select>
-                                                                                                                                                                                                                                                                                                                                                                            </p>
-                                                                                                                                                                                                                                                                                                                                                                            </div>`;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="slideshow_images[]" value="">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <button type="button" class="upload-image button" style="margin-top: 5px;">Upload Image</button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <button type="button" class="remove-slide button" style="width: 100px;height: 20px;margin-left: 5px;margin-top: 5px;">Remove Slide</button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </p>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <p>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <label>Position:</label><br>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <select name="slideshow_positions[]">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value=" ">Top Left</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="top-right">Top Right</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="bottom-left">Bottom Left</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="bottom-right">Bottom Right</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="middle">Middle</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </select>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </p>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>`;
                         $('#slideshow-items').append(newSlide);
                     });
 
@@ -472,45 +640,42 @@ function kingsland_tour_package_details_callback($post)
             <label for="itinerary">Itinerary:</label>
             <div id="itinerary-repeater">
                 <?php
-                if (!empty($fields['itinerary'])) {
+                if (!empty($fields['itinerary']) && is_array($fields['itinerary'])) {
                     foreach ($fields['itinerary'] as $index => $day) {
-                        // Convert tags array to comma-separated string if it exists
-                        $tags_string = isset($day['day_tags']) ?
-                            (is_array($day['day_tags']) ? implode(', ', $day['day_tags']) : $day['day_tags']) : '';
+                        $day_title = isset($day['day_title']) ? $day['day_title'] : '';
+                        $day_label = isset($day['day_label']) ? $day['day_label'] : '';
+                        // Convert tags array back to comma-separated string for display
+                        $day_tags = isset($day['day_tags']) ? implode(', ', $day['day_tags']) : '';
                         ?>
-
                         <div class="itinerary-item" style="margin-bottom: 10px">
                             <input type="text" name="itinerary[<?php echo $index; ?>][day_title]" placeholder="Day Title"
-                                value="<?php echo esc_attr($day['day_title']); ?>" style="width: 100%; margin-right: 2%" />
-
-
-
+                                value="<?php echo esc_attr($day_title); ?>" style="width: 100%; margin-bottom: 5px;" />
 
                             <input type="text" name="itinerary[<?php echo $index; ?>][day_tags]"
-                                placeholder="Day tags (comma-separated)" value="<?php echo esc_attr($tags_string); ?>"
-                                style="width: 100%; margin-right: 2%" />
+                                placeholder="Day Tags (comma-separated)" value="<?php echo esc_attr($day_tags); ?>"
+                                style="width: 100%; margin-bottom: 5px;" />
 
-                            <input type="text" name="itinerary[<?php echo $index; ?>][day_label]" placeholder="Day activities"
-                                value="<?php echo esc_attr($day['day_label']); ?>" style="width: 100%; margin-right: 2%" />
+                            <textarea name="itinerary[<?php echo $index; ?>][day_label]" placeholder="Day Activities"
+                                style="width: 100%; margin-bottom: 5px;"><?php echo esc_textarea($day_label); ?></textarea>
 
-                            <button type="button" class="remove-itinerary-btn">Remove</button>
+                            <button type="button" class="remove-itinerary-btn button">Remove Day</button>
                         </div>
                         <?php
                     }
                 } else {
-                    // Default input fields if no itinerary exists
+                    // Default empty fields if no itinerary exists
                     ?>
-                    <?php $day = array('day_tags' => ''); ?>
                     <div class="itinerary-item" style="margin-bottom: 10px">
-                        <input type="text" name="itinerary[0][day_title]" placeholder="Day Title"
-                            style=" width: 100%; margin-right: 2% " />
+                        <input type="text" name="itinerary[0][day_title]" placeholder="Day Title" value=""
+                            style="width: 100%; margin-bottom: 5px;" />
 
-                        <input type="text" name="itinerary[0][day_tags]" placeholder="Day Tags (comma-separated)"
-                            style="width: 100%; margin-right: 2%" />
+                        <input type="text" name="itinerary[0][day_tags]" placeholder="Day Tags (comma-separated)" value=""
+                            style="width: 100%; margin-bottom: 5px;" />
 
-                        <input type="text" name="itinerary[0][day_label]" placeholder="Day "
-                            style="width: 100%; margin-right: 2%" />
+                        <textarea name="itinerary[0][day_label]" placeholder="Day Activities"
+                            style="width: 100%; margin-bottom: 5px;"></textarea>
 
+                        <button type="button" class="remove-itinerary-btn button">Remove Day</button>
                     </div>
                     <?php
                 }
@@ -580,7 +745,11 @@ function kingsland_tour_package_details_callback($post)
                                     value="<?php echo esc_attr($hotel['name']); ?>" />
                                 <input type="text" name="hotels[<?php echo $index; ?>][address]" placeholder="Hotel Address"
                                     value="<?php echo esc_attr($hotel['address']); ?>" />
+                                <p class="note">
+                                    Note: Write city in 2nd Last in Address Section
+                                </p>
                             </div>
+
                             <input type="hidden" name="hotels[<?php echo $index; ?>][image]"
                                 value="<?php echo esc_attr($hotel['image']); ?>" />
                             <select name="hotels[<?php echo $index; ?>][rating]" style="width: 20%; height:10%">
@@ -683,14 +852,14 @@ function kingsland_tour_package_details_callback($post)
                     // Add new destination
                     $('#add-destination').click(function () {
                         const html = `
-                                                <div class="destination-input-group" >
-                                                <div class="image-preview"></div>
-                            <input type="hidden" name="destination[${destinationIndex}][image]" class="destination-image-input" />
-                            <button type="button" class="upload-destination-image">Upload Image</button>
-                            <button type="button" class="remove-destination">Remove</button>
-                            <input type="text" name="destination[${destinationIndex}][name]" placeholder="Destination Name" />
-                            <input type="text" name="destination[${destinationIndex}][destination_url]" placeholder="Destination URL" />
-                                                                                                </div>`;
+                                                                                                                                                                                                                                                        <div class="destination-input-group" >
+                                                                                                                                                                                                                                                        <div class="image-preview"></div>
+                                                                                                                                                                                                                                    <input type="hidden" name="destination[${destinationIndex}][image]" class="destination-image-input" />
+                                                                                                                                                                                                                                    <button type="button" class="upload-destination-image">Upload Image</button>
+                                                                                                                                                                                                                                    <button type="button" class="remove-destination">Remove</button>
+                                                                                                                                                                                                                                    <input type="text" name="destination[${destinationIndex}][name]" placeholder="Destination Name" />
+                                                                                                                                                                                                                                    <input type="text" name="destination[${destinationIndex}][destination_url]" placeholder="Destination URL" />
+                                                                                                                                                                                                                                                                                                        </div>`;
                         $('#destinations-wrapper').append(html);
                         destinationIndex++;
                     });
@@ -744,7 +913,8 @@ function kingsland_tour_package_details_callback($post)
                 }
 
                 .image-preview img {
-                    width: 100%;
+                    width: 50%;
+                    margin: 3px 0px 7px 129px;
                     height: auto;
                 }
 
@@ -787,7 +957,7 @@ function kingsland_tour_package_details_callback($post)
         <?php
 }
 
-// Add this function to fix the FAQ and Itinerary saving
+// Add this function to saving
 
 function kingsland_save_tour_package_meta_data($post_id)
 {
@@ -867,29 +1037,30 @@ function kingsland_save_tour_package_meta_data($post_id)
                     break;
 
                 case 'itinerary':
-                    if (is_array($_POST[$field])) {
-                        $itinerary = array_filter($_POST[$field], function ($day) {
-                            return !empty($day['day_title']) && !empty($day['day_label']);
-                        });
+                    if (isset($_POST[$field]) && is_array($_POST[$field])) {
+                        $itinerary = array();
+                        foreach ($_POST[$field] as $day) {
+                            if (!empty($day['day_title']) || !empty($day['day_label']) || !empty($day['day_tags'])) {
+                                // Split tags string into array and trim whitespace
+                                $tags = !empty($day['day_tags']) ?
+                                    array_map('trim', explode(',', sanitize_text_field($day['day_tags']))) :
+                                    array();
 
-                        $sanitized_itinerary = array_map(function ($day) {
-                            // Convert comma-separated string to array and trim whitespace
-                            $tags = !empty($day['day_tags']) ?
-                                array_map('trim', explode(',', $day['day_tags'])) :
-                                array();
+                                $itinerary[] = array(
+                                    'day_title' => sanitize_text_field($day['day_title'] ?? ''),
+                                    'day_label' => sanitize_text_field($day['day_label'] ?? ''),
+                                    'day_tags' => $tags
+                                );
+                            }
+                        }
 
-                            return array(
-                                'day_title' => sanitize_text_field($day['day_title']),
-                                'day_label' => sanitize_text_field($day['day_label']),
-                                'day_tags' => array_filter($tags) // Remove empty tags
-                            );
-                        }, $itinerary);
-
-                        if (!empty($sanitized_itinerary)) {
-                            update_post_meta($post_id, $field, maybe_serialize($sanitized_itinerary));
+                        if (!empty($itinerary)) {
+                            update_post_meta($post_id, $field, $itinerary);
                         } else {
                             delete_post_meta($post_id, $field);
                         }
+                    } else {
+                        delete_post_meta($post_id, $field);
                     }
                     break;
 
@@ -991,8 +1162,8 @@ function kingsland_save_tour_package_meta_data($post_id)
                     break;
             }
         } else {
-            // Optionally, delete the meta if not set
-            delete_post_meta($post_id, $field);
+            // Always save even if empty
+            update_post_meta($post_id, $field, '');
         }
     }
     // Save slideshow data
@@ -1035,6 +1206,19 @@ function kingsland_save_tour_package_meta_data($post_id)
         // Clear destinations if none submitted
         delete_post_meta($post_id, 'destinations');
     }
+    // Save selected categories
+    if (isset($_POST['display_categories'])) {
+        $categories = array_map('absint', $_POST['display_categories']);
+        update_post_meta($post_id, 'display_categories', $categories);
+    } else {
+        delete_post_meta($post_id, 'display_categories');
+    }
+
+    // Update query args in single.php
+    $selected_cats = get_post_meta($post_id, 'display_categories', true);
+    if (!empty($selected_cats)) {
+        $args['category__in'] = $selected_cats;
+    }
     // Add debugging
     error_log('POST data: ' . print_r($_POST, true));
     error_log('Saved meta fields: ' . print_r(get_post_meta($post_id), true));
@@ -1053,6 +1237,9 @@ function kingsland_load_single_package_template($single_template)
 
     return $single_template;
 }
+
+
+
 add_filter('single_template', 'kingsland_load_single_package_template');
 
 

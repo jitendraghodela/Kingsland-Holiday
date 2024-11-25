@@ -10,7 +10,10 @@ if (!current_user_can('activate_plugins')) {
 }
 
 // Required WordPress files
-require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+if (!defined('ABSPATH')) {
+    require_once dirname(__FILE__) . '/../../../wp-load.php';
+}
+require_once ABSPATH . 'wp-admin/includes/plugin.php';
 // Clear all caches
 wp_cache_flush();
 

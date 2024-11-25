@@ -1,9 +1,14 @@
 <?php
 // Ensure this code is placed at the beginning of the template file
 require_once(ABSPATH . 'wp-load.php');
+require_once(ABSPATH . 'wp-includes/class-wp-query.php');
 get_header();
 // Get the current post ID  
 $post_id = get_the_ID();
+// Retrieve the necessary post meta data
+// At the beginning of your template, add debugging
+$selected_cats = get_post_meta(get_the_ID(), 'display_categories', true);
+error_log('Selected Categories: ' . print_r($selected_cats, true));
 // Retrieve the necessary post meta data
 $slideshow_images = get_post_meta($post->ID, 'slideshow_images', true);
 $slideshow_captions = get_post_meta($post->ID, 'slideshow_captions', true);
@@ -59,6 +64,192 @@ $package = [
         href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap"
         rel="stylesheet">
     <style>
+        body {
+            font-size: 21px;
+        }
+
+
+        /* Content and Read More styling */
+        .content-wrapper {
+            position: relative;
+            max-height: 100px;
+            /* Adjust this value to show roughly 4 lines */
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .content-wrapper.expanded {
+            max-height: none;
+        }
+
+        .content-wrapper:not(.expanded)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(transparent, white);
+        }
+
+        .mob-tab-sticky {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            background: #fff;
+            z-index: 100;
+        }
+
+        /* Class that gets added via JavaScript */
+        .is-sticky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            animation: slideDown 0.3s ease-in-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .mob-only {
+            display: block;
+            /* Visible by default on mobile */
+        }
+
+
+
+        .mobile-tabs a {
+            text-decoration: none;
+            /* Remove default underline */
+            position: relative;
+        }
+
+        .mobile-tabs a.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 100%;
+            height: 2px;
+            background-color: #000;
+            /* Change to your desired color */
+        }
+
+        @media screen and (min-width: 768px) {
+            .mob-only {
+                display: none;
+                /* Hidden on desktop */
+            }
+        }
+
+        .slideshow-prev,
+        .slideshow-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slideshow-next {
+            right: 20px;
+        }
+
+        .slideshow-prev {
+            left: 20px;
+        }
+
+
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+
+        .lightbox-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90vh;
+            object-fit: contain;
+            margin: auto;
+        }
+
+        .lightbox .close {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            color: #fff;
+            font-size: 35px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .lightbox .prev,
+        .lightbox .next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+        }
+
+        .lightbox .prev {
+            left: 20px;
+        }
+
+        .lightbox .next {
+            right: 20px;
+        }
+
+        .lightbox-caption {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
         .slideshow-container {
             max-width: 1000px;
             position: relative;
@@ -122,44 +313,9 @@ $package = [
             transform: translate(-50%, -50%);
         }
 
-        .prev,
-        .next {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            padding: 16px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            font-size: 18px;
-            border: none;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: background-color 0.3s;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
 
-        .prev:hover,
-        .next:hover {
-            background: rgba(0, 0, 0, 0.8);
-        }
 
-        .prev {
-            left: 20px;
-        }
-
-        .next {
-            right: 20px;
-        }
-
-        .fade {
-            animation: fade 0.5s ease-in-out;
-        }
-
-        @keyframes fade {
+        @keyframes fade-silde {
             from {
                 opacity: 0.4;
             }
@@ -167,145 +323,6 @@ $package = [
             to {
                 opacity: 1;
             }
-        }
-
-        /* Content and Read More styling */
-        .content-wrapper {
-            position: relative;
-            max-height: 100px;
-            /* Adjust this value to show roughly 4 lines */
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .content-wrapper.expanded {
-            max-height: none;
-        }
-
-        .content-wrapper:not(.expanded)::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 40px;
-            background: linear-gradient(transparent, white);
-            /* Fade out effect */
-        }
-
-        .read-more-btn {
-            bold: 600;
-            display: block;
-            /* margin: 10px 0;
-            padding: 8px 16px;
-            background-color: #20a397 !important; */
-            color: #2196f3;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        /* .read-more-btn:hover {
-            background-color: #20a397 !important;
-        } */
-
-        .mob-tab-sticky {
-            overflow: hidden;
-            position: relative;
-            width: 100%;
-            background: #fff;
-            z-index: 100;
-        }
-
-        /* Class that gets added via JavaScript */
-        .is-sticky {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            animation: slideDown 0.3s ease-in-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-100%);
-            }
-
-            to {
-                transform: translateY(0);
-            }
-        }
-
-        .mob-only {
-            display: block;
-            /* Visible by default on mobile */
-        }
-
-
-
-        .mobile-tabs a {
-            text-decoration: none;
-            /* Remove default underline */
-            position: relative;
-        }
-
-        .mobile-tabs a.active::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: -2px;
-            width: 100%;
-            height: 2px;
-            background-color: #000;
-            /* Change to your desired color */
-        }
-
-        .itinerary-wrapper {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .itinerary-container {
-
-            overflow: hidden;
-
-            /* position: relative; */
-            width: 100%;
-            background-color: white;
-            border: 1px solid #ddd;
-            padding: 20px;
-            /* max-width: 800px; */
-            margin: 0 auto;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .itinerary-scroll-container {
-            max-height: 589px;
-            overflow-y: auto;
-            padding-right: 10px;
-            /* Custom Scrollbar */
-            scrollbar-width: thin;
-            scrollbar-color: #888 #f1f1f1;
-        }
-
-        @media screen and (min-width: 768px) {
-            .mob-only {
-                display: none;
-                /* Hidden on desktop */
-            }
-
-
-
-        }
-
-        .itinerary-header {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            z-index: 1;
         }
     </style>
 </head>
@@ -322,7 +339,7 @@ $package = [
         </div>
     </div>
     <div class="overview">
-        <div class="container">
+        <div class="op-container">
 
 
             <!-- First Section: Overview of Package -->
@@ -335,14 +352,14 @@ $package = [
                         // Include the featured image as the first slide if it exists
                         if (has_post_thumbnail($post_id)) {
                             ?>
-                            <div class="slide fade">
+                            <div class="slide fade-silde">
                                 <img src="<?php echo get_the_post_thumbnail_url($post_id, 'full'); ?>"
                                     alt="<?php echo esc_attr($package['title']); ?>">
                             </div>
                             <?php
                         }
                         foreach ($package['slideshow_images'] as $index => $image): ?>
-                            <div class="slide fade">
+                            <div class="slide fade-silde">
                                 <img src="<?php echo esc_url($image); ?>"
                                     alt="<?php echo esc_attr($package['slideshow_captions'][$index]); ?>">
                                 <?php if (!empty($package['slideshow_captions'][$index])): ?>
@@ -357,8 +374,8 @@ $package = [
                     }
                     ?>
 
-                    <button class="prev" onclick="changeSlide(-1)">❮</button>
-                    <button class="next" onclick="changeSlide(1)">❯</button>
+                    <button class="slideshow-prev" onclick="changeSlide(-1)">❮</button>
+                    <button class="slideshow-next" onclick="changeSlide(1)">❯</button>
                 </div>
 
                 <div id="lightbox" class="lightbox" style="display">
@@ -366,81 +383,10 @@ $package = [
                     <div class="lightbox-content">
                         <img id="lightbox-img" src="" alt="">
                         <div class="lightbox-caption"></div>
-                        <button class="prev" onclick="changeLightboxSlide(-1)">❮</button>
-                        <button class="next" onclick="changeLightboxSlide(1)">❯</button>
+                        <button class="lightbox-prev" onclick="changeLightboxSlide(-1)">❮</button>
+                        <button class="lightbox-next" onclick="changeLightboxSlide(1)">❯</button>
                     </div>
                 </div>
-                <style>
-                    .lightbox {
-                        display: none;
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background-color: rgba(0, 0, 0, 0.9);
-                        z-index: 1000;
-                    }
-
-                    .lightbox-content {
-                        position: relative;
-                        width: 100%;
-                        height: 100%;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                    }
-
-                    .lightbox img {
-                        max-width: 90%;
-                        max-height: 90vh;
-                        object-fit: contain;
-                        margin: auto;
-                    }
-
-                    .lightbox .close {
-                        position: absolute;
-                        top: 15px;
-                        right: 25px;
-                        color: #fff;
-                        font-size: 35px;
-                        cursor: pointer;
-                        z-index: 1001;
-                    }
-
-                    .lightbox .prev,
-                    .lightbox .next {
-                        position: absolute;
-                        top: 50%;
-                        transform: translateY(-50%);
-                        color: white;
-                        font-size: 30px;
-                        cursor: pointer;
-                        padding: 16px;
-                        background: rgba(0, 0, 0, 0.5);
-                        border-radius: 50%;
-                    }
-
-                    .lightbox .prev {
-                        left: 20px;
-                    }
-
-                    .lightbox .next {
-                        right: 20px;
-                    }
-
-                    .lightbox-caption {
-                        position: absolute;
-                        bottom: 20px;
-                        left: 0;
-                        right: 0;
-                        text-align: center;
-                        color: white;
-                        padding: 10px;
-                        background: rgba(0, 0, 0, 0.5);
-                    }
-                </style>
-
                 <script>
                     let currentLightboxSlide = 0;
                     const lightboxSlides = document.querySelectorAll(".slide img");
@@ -489,14 +435,12 @@ $package = [
                         <!-- <h4><?php echo esc_html($package['title']); ?> </h4> -->
                         <strong>
                             <p>
-                                Cities: <?php echo esc_html($package['location']); ?></p>
-
-
-
-                            <?php echo esc_html($package['duration']); ?>
-                            | <strong><?php echo esc_html($package['hotel_star']); ?></strong> Hotel included in
-                            package
-
+                                Cities: <?php echo esc_html($package['location']); ?>
+                            </p>
+                            <p>
+                                <?php echo esc_html($package['duration']); ?>
+                                | <strong><?php echo esc_html($package['hotel_star']); ?></strong> Hotel included in
+                                package
                             </p>
                         </strong>
 
@@ -584,9 +528,9 @@ $package = [
 
                     <a class="check-availability" href="#contact" onclick="showContactForm()">Contact With Our
                         Expert</a>
-                    <div class="package-info">
+                    <!-- <div class="package-info">
 
-                    </div>
+                    </div> -->
                 </span>
             </div>
         </div>
@@ -598,7 +542,7 @@ $package = [
             <div class="package-detailTOView">
                 <h1 style="font-size:27px"><?php echo esc_html($package['title']); ?></h1>
                 <!-- default content show here for default enditor-->
-                <!-- In your single.php -->
+
                 <strong style="display:inline">
                     <h2>Overview:</h2>
                 </strong>
@@ -625,11 +569,8 @@ $package = [
 
                 <!-- Brief content -->
                 <p><strong>Things to do:</strong>
-                    <?php echo wp_trim_words(esc_html($package['things_to_do']), 10, '...'); ?></p>
-
-
-
-
+                    <?php echo esc_html($package['things_to_do']); ?>
+                </p>
             </div>
 
 
@@ -731,42 +672,6 @@ $package = [
                 <button type="submit" class="submit-btn" name="send" value="send">Submit</button>
             </form>
         </div>
-
-        <style>
-            @media screen and (min-width: 768px) {
-                .sticky-form {
-                    position: -webkit-sticky;
-                    position: sticky;
-                    top: 20px;
-                }
-
-                /* Make day container content sticky */
-                .itinerary-container {
-                    position: -webkit-sticky;
-                    position: sticky;
-                    top: 20px;
-                    height: fit-content;
-                    overflow-y: auto;
-                }
-
-                /* Container for form and content */
-                .content-section {
-                    display: flex;
-                    gap: 30px;
-                    align-items: flex-start;
-                }
-
-                .package-details {
-                    flex: 2;
-                }
-
-                .sticky-form {
-                    flex: 1;
-                    max-width: 350px;
-                }
-            }
-        </style>
-
     </div>
     <?php
     use PHPMailer\PHPMailer\PHPMailer;
@@ -802,8 +707,8 @@ $package = [
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'abc@gmail.com';
-            $mail->Password = '1234 5678 4321';
+            $mail->Username = get_option('kingsland_email_username'); // Updated
+            $mail->Password = get_option('kingsland_email_password'); // Updated
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port = 465;
 
@@ -864,18 +769,24 @@ $package = [
                         ?>
                         <div class="days-scroll-container">
                             <div class="day">
-                                <div class="toggleitDaY" onclick="toggleTaq(this)" onclick="toggleFaq(this)">
+                                <div class="toggleitDaY" onclick="toggleTaq(this)">
 
                                     <div class="day-title" style="display:inline-block">
-                                        <h3 style="font-size: 21px;">
+                                        <h3 style="font-size: 21px; margin-top: 0;">
                                             <?php echo esc_html($day['day_title']); ?>
-
-
+                                            <br>
                                             <?php
                                             // Get tags for this day if they exist
                                             if (isset($day['day_tags']) && is_array($day['day_tags'])) {
-                                                foreach ($day['day_tags'] as $tag) {
-                                                    echo '<span class="day-tag day-tags"  >' . esc_html($tag) . '</span>';
+                                                $tag_count = count($day['day_tags']);
+                                                $displayed_tags = array_slice($day['day_tags'], 0, 2); // Show only the first 2 tags
+                                    
+                                                foreach ($displayed_tags as $tag) {
+                                                    echo '<span class="day-tag day-tags" style="margin-right: 5px;">' . esc_html($tag) . '</span>';
+                                                }
+
+                                                if ($tag_count > 2) {
+                                                    echo '<span class="day-tag day-tags">+' . ($tag_count - 2) . ' others</span>';
                                                 }
                                             } else {
                                                 // Default tags if none are set
@@ -967,7 +878,8 @@ $package = [
                     if (!empty($hotels) && is_array($hotels)) {
                         foreach ($hotels as $hotel) {
                             ?>
-                            <div class="hotel-card" style="  border: 2px solid; ">
+                            <div class="hotel-card" style="border: 2px solid;"
+                                onclick="showHotelPopup('<?php echo esc_url($hotel['image']); ?>', '<?php echo esc_html($hotel['name']); ?>', '<?php echo esc_html($hotel['address']); ?>', '<?php echo intval($hotel['rating']); ?>')">
                                 <!-- Hotel Image -->
                                 <img src="<?php echo esc_url($hotel['image']); ?>" alt="<?php echo esc_attr($hotel['name']); ?>"
                                     class="hotel-image" />
@@ -985,9 +897,66 @@ $package = [
                                         }
                                         ?>
                                     </div>
-                                    <p><?php echo esc_html($hotel['address']); ?></p>
+                                    <?php
+                                    // Extract city from the address
+                                    $address_parts = explode(',', $hotel['address']);
+                                    $city = $address_parts[count($address_parts) - 2]; // Assuming the city is the second last part of the address
+                                    ?>
+                                    <p><?php echo esc_html($city); ?></p>
                                 </div>
                             </div>
+
+                            <!-- Hotel Popup Modal -->
+                            <div id="hotel-popup" class="hotel-popup" onclick="closeHotelPopup(event)">
+                                <div class="hotel-popup-content">
+                                    <span class="hotel-c-close" onclick="closeHotelPopup()">&times;</span>
+                                    <button class="hotel-a-prev" onclick="changeHotel(-1)">❮</button>
+                                    <img id="hotel-popup-img" src="" alt="Hotel Image" class="hotel-popup-img">
+                                    <button class="hotel-a-next" onclick="changeHotel(1)">❯</button>
+                                    <h2 id="hotel-popup-name"></h2>
+                                    <div id="hotel-popup-rating" class="star-rating" style="justify-content: space-around;">
+                                    </div>
+                                    <p id="hotel-popup-address"></p>
+                                </div>
+                            </div>
+
+                            <script>
+                                let currentHotelIndex = 0;
+                                const hotels = <?php echo json_encode($hotels); ?>;
+
+                                function showHotelPopup(image, name, address, rating) {
+                                    document.getElementById('hotel-popup-img').src = image;
+                                    document.getElementById('hotel-popup-name').textContent = name;
+                                    document.getElementById('hotel-popup-address').textContent = address;
+
+                                    const ratingContainer = document.getElementById('hotel-popup-rating');
+                                    ratingContainer.innerHTML = '';
+                                    for (let i = 0; i < 5; i++) {
+                                        ratingContainer.innerHTML += i < rating ? '⭐' : '☆';
+                                    }
+
+                                    document.getElementById('hotel-popup').style.display = 'flex';
+                                }
+
+                                function closeHotelPopup(event) {
+                                    if (event.target.id === 'hotel-popup' || event.target.classList.contains('close')) {
+                                        document.getElementById('hotel-popup').style.display = 'none';
+                                    }
+                                }
+
+                                function changeHotel(direction) {
+                                    currentHotelIndex += direction;
+
+                                    if (currentHotelIndex >= hotels.length) {
+                                        currentHotelIndex = 0;
+                                    } else if (currentHotelIndex < 0) {
+                                        currentHotelIndex = hotels.length - 1;
+                                    }
+
+                                    const hotel = hotels[currentHotelIndex];
+                                    showHotelPopup(hotel.image, hotel.name, hotel.address, hotel.rating);
+                                }
+                            </script>
                             <?php
                         }
                     } else {
@@ -995,6 +964,9 @@ $package = [
                     }
                     ?>
                 </div>
+                <p class="note">
+                    Note: Click Hotel For See Full Address
+                </p>
             </div>
             <div class="container-inc" id="inclusions" class="section">
                 <div class="tabs">
@@ -1003,7 +975,8 @@ $package = [
                 </div>
 
                 <div class="content">
-                    <div id="inclusions-content" class="tab-content active">
+                    <div id="inclusions-content" class="tab-content active" style="    border-bottom: 5px solid 
+    #20a397;">
                         <ul>
                             <?php
                             $inclusions = maybe_unserialize(get_post_meta(get_the_ID(), 'inclusions', true));
@@ -1020,7 +993,8 @@ $package = [
                             ?>
                         </ul>
                     </div>
-                    <div id="exclusions-content" class="tab-content ">
+                    <div id="exclusions-content" class="tab-content " style="    border-bottom: 5px solid 
+    #B42D1C;">
                         <ul>
                             <?php
                             $exclusions = maybe_unserialize(get_post_meta(get_the_ID(), 'exclusions', true));
@@ -1059,80 +1033,6 @@ $package = [
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
-    <!-- Google Reviews Section -->
-    <section class="google-reviews">
-        <h2>What Our Guests Say</h2>
-        <div class="reviews-container ">
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="reviewer-name">Meera Kanneri</div>
-                    <div class="review-rating">
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-
-                    </div>
-                </div>
-                <p class="review-text">
-                    "We had a fantastic experience with the Kingsland Holidays while planning our Rajasthan trip! A big
-                    thanks to Rohit for considering all our requirements..."
-
-
-                </p>
-                <div class="review-header">
-                    <div></div>
-                    <img height="30" width="30"
-                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>" alt="">
-                </div>
-
-            </div>
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="reviewer-name">Jaideep singh Jatain</div>
-                    <div class="review-rating">
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                    </div>
-                </div>
-                <p class="review-text">
-                    "We had an amazing trip to Gujarat at Statue of Unity and all the thanks to Kingsland Holiday for
-                    that. Our trip was planned by Mr. Mohit..."
-                </p>
-                <div class="review-header">
-                    <div></div>
-                    <img height="30" width="30"
-                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>" alt="">
-                </div>
-            </div>
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="reviewer-name">Payal Malekar</div>
-                    <div class="review-rating">
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-
-                    </div>
-                </div>
-                <p class="review-text">
-                    "I want to thank you for providing us with a wonderful travel experience with Kingsland holidays .
-                    Everything was planned and organized perfectly, and we enjoyed the trip immensely…"
-                </p>
-                <div class="review-header">
-                    <div></div>
-                    <img height="30" width="30"
-                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>" alt="">
-                </div>
-            </div>
-        </div>
-    </section>
 
     <div class="fixed-buttons" id="contactButton">
         <?php
@@ -1143,366 +1043,532 @@ $package = [
         <button class="availability-btn req" onclick="showContactForm()">Request a
             Callback</button>
     </div>
+    <!-- show selected_cats packages -->
 
-    <!-- section for published packages from us -->
+    <!-- Package Section -->
     <section class="published-package">
-        <h2 style="text-align: center;"> Packages</h2>
+        <h2 style="text-align: center;">Recently Published Packages</h2>
         <div class="package-container-wrapper">
             <div class="package-container">
                 <?php
-                // Get current package location and price
-                $current_location = get_post_meta(get_the_ID(), 'trip_location', true);
-                $current_price = get_post_meta(get_the_ID(), 'price', true);
+                // Get the current post ID to exclude it from the query
+                $current_id = get_the_ID();
 
-                // Query arguments for similar packages
-                $args_similar = array(
+                // Query arguments for recently published packages
+                $recent_packages_args = array(
                     'post_type' => 'tour_package',
                     'posts_per_page' => 6,
                     'post_status' => 'publish',
-                    'post__not_in' => array(get_the_ID()),
-                    'meta_query' => array(
-                        'relation' => 'OR',
-                        array(
-                            'key' => 'trip_location',
-                            'value' => $current_location,
-                            'compare' => 'LIKE'
-                        ),
-                        array(
-                            'key' => 'price',
-                            'value' => array(
-                                $current_price * 0.7, // 30% lower
-                                $current_price * 1.3  // 30% higher
-                            ),
-                            'type' => 'NUMERIC',
-                            'compare' => 'BETWEEN'
-                        )
-                    ),
-                    'orderby' => 'meta_value_num',
-                    'meta_key' => 'price'
+                    'post__not_in' => array($current_id),
+                    'orderby' => 'date',
+                    'order' => 'DESC',
                 );
 
-                $query_similar = new WP_Query($args_similar);
+                $recent_packages_query = new WP_Query($recent_packages_args);
 
-                if ($query_similar->have_posts()):
-                    while ($query_similar->have_posts()):
-                        $query_similar->the_post();
-
-                        // Get package details
-                        $price = get_post_meta(get_the_ID(), 'price', true);
-                        $location = get_post_meta(get_the_ID(), 'trip_location', true);
-                        $duration = get_post_meta(get_the_ID(), 'duration', true);
+                if ($recent_packages_query->have_posts()):
+                    while ($recent_packages_query->have_posts()):
+                        $recent_packages_query->the_post();
+                        $package_id = get_the_ID();
+                        $package_location = get_post_meta($package_id, 'trip_location', true);
+                        $package_duration = get_post_meta($package_id, 'duration', true);
+                        $package_price = get_post_meta($package_id, 'price', true);
                         ?>
-
                         <div class="package-card">
                             <a href="<?php the_permalink(); ?>" class="package-link">
                                 <?php if (has_post_thumbnail()): ?>
-                                    <img src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'medium'); ?>"
+                                    <img src="<?php echo get_the_post_thumbnail_url($package_id, 'medium'); ?>"
                                         alt="<?php echo esc_attr(get_the_title()); ?>" class="package-image" />
                                 <?php endif; ?>
 
                                 <div class="package-details">
-                                    <h3 class="package-title"><?php echo esc_html(get_the_title()); ?></h3>
+                                    <h3 class="package-title"><?php the_title(); ?></h3>
+                                    <?php if (!empty($package_location)): ?>
+                                        <p class="package-meta">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <?php echo esc_html($package_location); ?>
+                                        </p>
+                                    <?php endif; ?>
 
-                                    <p class="package-meta">
-                                        <i class="fas fa-map-marker-alt"></i> <?php echo esc_html($location); ?>
-                                    </p>
+                                    <?php if (!empty($package_duration)): ?>
+                                        <p class="package-meta">
+                                            <i class="fas fa-clock"></i>
+                                            <?php echo esc_html($package_duration); ?>
+                                        </p>
+                                    <?php endif; ?>
 
-                                    <p class="package-meta">
-                                        <i class="fas fa-clock"></i> <?php echo esc_html($duration); ?>
-                                    </p>
-
-                                    <p class="package-price">
-                                        <i class="fas fa-rupee-sign"></i> <?php echo number_format($price); ?>/-
-                                    </p>
+                                    <?php if (!empty($package_price)): ?>
+                                        <p class="package-price">
+                                            <i class="fas fa-rupee-sign"></i>
+                                            <?php echo number_format(floatval($package_price)); ?>/-
+                                        </p>
+                                    <?php endif; ?>
                                 </div>
                             </a>
                         </div>
-
                         <?php
                     endwhile;
                     wp_reset_postdata();
                 else: ?>
-
-                <?php endif; ?>
-
-                <?php
-                // Query arguments for different packages
-                $args_different = array(
-                    'post_type' => 'tour_package',
-                    'posts_per_page' => 6,
-                    'post_status' => 'publish',
-                    'post__not_in' => array_merge(array(get_the_ID()), wp_list_pluck($query_similar->posts, 'ID')),
-                    'meta_query' => array(
-                        'relation' => 'AND',
-                        array(
-                            'key' => 'trip_location',
-                            'value' => $current_location,
-                            'compare' => 'NOT LIKE'
-                        ),
-                        array(
-                            'key' => 'price',
-                            'value' => array(
-                                $current_price * 0.7, // 30% lower
-                                $current_price * 1.3  // 30% higher
-                            ),
-                            'type' => 'NUMERIC',
-                            'compare' => 'NOT BETWEEN'
-                        )
-                    ),
-                    'orderby' => 'meta_value_num',
-                    'meta_key' => 'price'
-                );
-
-                $query_different = new WP_Query($args_different);
-
-                if ($query_different->have_posts()):
-                    while ($query_different->have_posts()):
-                        $query_different->the_post();
-
-                        // Get package details
-                        $price = get_post_meta(get_the_ID(), 'price', true);
-                        $location = get_post_meta(get_the_ID(), 'trip_location', true);
-                        $duration = get_post_meta(get_the_ID(), 'duration', true);
-                        ?>
-
-                        <div class="package-card">
-                            <a href="<?php the_permalink(); ?>" class="package-link">
-                                <?php if (has_post_thumbnail()): ?>
-                                    <img src="<?php echo get_the_post_thumbnail_url(get_the_ID(), 'medium'); ?>"
-                                        alt="<?php echo esc_attr(get_the_title()); ?>" class="package-image" />
-                                <?php endif; ?>
-
-                                <div class="package-details">
-                                    <h3 class="package-title"><?php echo esc_html(get_the_title()); ?></h3>
-
-                                    <p class="package-meta">
-                                        <i class="fas fa-map-marker-alt"></i> <?php echo esc_html($location); ?>
-                                    </p>
-
-                                    <p class="package-meta">
-                                        <i class="fas fa-clock"></i> <?php echo esc_html($duration); ?>
-                                    </p>
-
-                                    <p class="package-price">
-                                        <i class="fas fa-rupee-sign"></i> <?php echo number_format($price); ?>/-
-                                    </p>
-                                </div>
-                            </a>
-                        </div>
-
-                        <?php
-                    endwhile;
-                    wp_reset_postdata();
-                else: ?>
-                    <p class="no-packages">No different packages available.</p>
+                    <p class="no-packages">No recently published packages available.</p>
                 <?php endif; ?>
             </div>
-            <button class="scroll-arrow scroll-left" title="Scroll Left">
+
+            <!-- Navigation Arrows -->
+            <button class="scroll-arrow scroll-left" aria-label="Scroll Left">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <button class="scroll-arrow scroll-right" title="Scroll Right">
+            <button class="scroll-arrow scroll-right" aria-label="Scroll Right">
                 <i class="fas fa-chevron-right"></i>
             </button>
-
-            <style>
-                /* Improved scroll arrows styling */
-                .scroll-arrow {
-                    position: absolute;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 44px;
-                    height: 44px;
-                    background: rgba(32, 163, 151, 0.85);
-                    /* Brand color with transparency */
-                    color: white;
-                    border: none;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    z-index: 2;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-                    opacity: 0;
-                    visibility: hidden;
-                }
-
-                .scroll-arrow:hover {
-                    background: rgba(32, 163, 151, 1);
-                    /* Solid brand color on hover */
-                    transform: translateY(-50%) scale(1.1);
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                }
-
-                .scroll-arrow:active {
-                    transform: translateY(-50%) scale(0.95);
-                }
-
-                .scroll-arrow i {
-                    font-size: 20px;
-                    color: white;
-                }
-
-                .scroll-left {
-                    left: 15px;
-                }
-
-                .scroll-right {
-                    right: 15px;
-                }
-
-
-                /* Show arrows with animation when visible */
-                .scroll-arrow.visible {
-                    opacity: 1;
-                    visibility: visible;
-                }
-
-                /* Responsive design */
-                @media (max-width: 768px) {
-                    .scroll-arrow {
-                        display: none !important;
-                    }
-                }
-
-                @media (hover: none) {
-                    .scroll-arrow {
-                        display: none !important;
-                    }
-                }
-
-                /* Also show arrows in mobile view */
-                @media (max-width: 768px) {
-                    .scroll-arrow {
-                        width: 36px;
-                        /* Slightly smaller on mobile */
-                        height: 36px;
-                        display: flex !important;
-                        /* Force display on mobile */
-                        opacity: 0.8;
-                        /* Slightly more transparent on mobile */
-                    }
-
-                    .scroll-left {
-                        left: 5px;
-                        /* Closer to edge on mobile */
-                    }
-
-                    .scroll-right {
-                        right: 5px;
-                    }
-                }
-
-                @media (hover: none) {
-                    .scroll-arrow {
-                        display: flex !important;
-                    }
-                }
-            </style>
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    const container = document.querySelector('.package-container');
-                    const leftArrow = document.querySelector('.scroll-left');
-                    const rightArrow = document.querySelector('.scroll-right');
-
-                    function checkScroll() {
-                        if (!container || !leftArrow || !rightArrow) return;
-
-                        const hasHorizontalScroll = container.scrollWidth > container.clientWidth;
-                        const maxScroll = container.scrollWidth - container.clientWidth;
-
-                        if (hasHorizontalScroll) {
-                            // Show/hide left arrow with class for animation
-                            leftArrow.classList.toggle('visible', container.scrollLeft > 0);
-                            // Show/hide right arrow with class for animation
-                            rightArrow.classList.toggle('visible', container.scrollLeft < maxScroll);
-                        }
-                    }
-
-                    leftArrow.addEventListener('click', () => {
-                        container.scrollBy({
-                            left: -container.offsetWidth / 3,
-                            behavior: 'smooth'
-                        });
-                    });
-
-                    rightArrow.addEventListener('click', () => {
-                        container.scrollBy({
-                            left: container.offsetWidth / 3,
-                            behavior: 'smooth'
-                        });
-                    });
-
-                    // Throttle scroll event for better performance
-                    let scrollTimeout;
-                    container.addEventListener('scroll', () => {
-                        if (!scrollTimeout) {
-                            scrollTimeout = setTimeout(() => {
-                                checkScroll();
-                                scrollTimeout = null;
-                            }, 100);
-                        }
-                    });
-
-                    window.addEventListener('resize', checkScroll);
-                    checkScroll();
-                });
-            </script>
-
+        </div>
     </section>
-    <?php
-    // Get the saved destinations from the post meta
-    $destinations = get_post_meta(get_the_ID(), 'destinations', true);
 
-    if (!empty($destinations) && is_array($destinations)) {
-        ?>
-        <div class="destination-cont">
-            <h2 style="text-align:center">Destinations</h2>
-            <div class="destination-con">
-                <?php foreach ($destinations as $destination) { ?>
-                    <div class="destination">
-                        <a href="<?php echo esc_url($destination['destination_url']); ?>" target="_blank">
-                            <?php if (!empty($destination['image'])) { ?>
-                                <img src="<?php echo esc_url($destination['image']); ?>"
-                                    alt="<?php echo esc_attr($destination['name']); ?>">
-                                <div class="destination-info">
-                                    <h3><?php echo esc_html($destination['name']); ?></h3>
-                                </div>
-                            </a>
-                        <?php } ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const container = document.querySelector('.package-container');
+            const leftArrow = document.querySelector('.scroll-left');
+            const rightArrow = document.querySelector('.scroll-right');
+
+            function checkScroll() {
+                if (!container || !leftArrow || !rightArrow) return;
+
+                const hasHorizontalScroll = container.scrollWidth > container.clientWidth;
+                const maxScroll = container.scrollWidth - container.clientWidth;
+
+                if (hasHorizontalScroll) {
+                    // Show/hide left arrow with class for animation
+                    leftArrow.classList.toggle('visible', container.scrollLeft > 0);
+                    // Show/hide right arrow with class for animation
+                    rightArrow.classList.toggle('visible', container.scrollLeft < maxScroll);
+                }
+            }
+
+            leftArrow.addEventListener('click', () => {
+                container.scrollBy({
+                    left: -container.offsetWidth / 3,
+                    behavior: 'smooth'
+                });
+            });
+
+            rightArrow.addEventListener('click', () => {
+                container.scrollBy({
+                    left: container.offsetWidth / 3,
+                    behavior: 'smooth'
+                });
+            });
+
+            // Throttle scroll event for better performance
+            let scrollTimeout;
+            container.addEventListener('scroll', () => {
+                if (!scrollTimeout) {
+                    scrollTimeout = setTimeout(() => {
+                        checkScroll();
+                        scrollTimeout = null;
+                    }, 100);
+                }
+            });
+
+            window.addEventListener('resize', checkScroll);
+            checkScroll();
+        });
+    </script>
+    </section>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const container = document.querySelector('.package-container');
+            const leftArrow = document.querySelector('.scroll-left');
+            const rightArrow = document.querySelector('.scroll-right');
+
+            function checkScroll() {
+                if (!container || !leftArrow || !rightArrow) return;
+
+                const hasHorizontalScroll = container.scrollWidth > container.clientWidth;
+                const maxScroll = container.scrollWidth - container.clientWidth;
+
+                if (hasHorizontalScroll) {
+                    // Show/hide left arrow with class for animation
+                    leftArrow.classList.toggle('visible', container.scrollLeft > 0);
+                    // Show/hide right arrow with class for animation
+                    rightArrow.classList.toggle('visible', container.scrollLeft < maxScroll);
+                }
+            }
+
+            leftArrow.addEventListener('click', () => {
+                container.scrollBy({
+                    left: -container.offsetWidth / 3,
+                    behavior: 'smooth'
+                });
+            });
+
+            rightArrow.addEventListener('click', () => {
+                container.scrollBy({
+                    left: container.offsetWidth / 3,
+                    behavior: 'smooth'
+                });
+            });
+
+            // Throttle scroll event for better performance
+            let scrollTimeout;
+            container.addEventListener('scroll', () => {
+                if (!scrollTimeout) {
+                    scrollTimeout = setTimeout(() => {
+                        checkScroll();
+                        scrollTimeout = null;
+                    }, 100);
+                }
+            });
+
+            window.addEventListener('resize', checkScroll);
+            checkScroll();
+        });
+    </script>
+    <!-- Google Reviews Section -->
+    <section class="google-reviews">
+        <h2>What Our Guests Say</h2>
+        <div class="reviews-container">
+            <!-- Original reviews -->
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Meera Kanneri</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
                     </div>
-                <?php } ?>
+                </div>
+                <p class="review-text">
+                    "We had a fantastic experience with the Kingsland Holidays while planning our Rajasthan trip! A big
+                    thanks to Rohit for considering all our requirements and arranging everything perfectly, especially
+                    while traveling with elderly family members"
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Apoorv Sinha</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <p class="review-text">
+                    "Had a wonderful time in Rajasthan with Kingsland Holiday. They planned everything perfectly and
+                    according to my needs - the trip covered all the places in Jodhpur, Jaisalmer and Udaipur. Special
+                    mention of our cab driver Mr. Dara Singh ji who added that…"
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Jaideep singh Jatain</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <p class="review-text">
+                    "We had an amazing trip to Gujarat at Statue of Unity and all the thanks to Kingsland Holiday for
+                    that. Our trip was planned by Mr. Mohit who remotely assisted us in best way possible, was always
+                    available at any hour of the day and made sure of everything requirement..."
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Payal Malekar</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <p class="review-text">
+                    "I want to thank you for providing us with a wonderful travel experience with Kingsland holidays .
+                    Everything was planned and organized perfectly, and we enjoyed the trip immensely. It was one of the
+                    best trips we ever had!
+
+                    Our driver Sunder Singh was very helpful throughout the journey…"
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Nitisha Chauhan</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <p class="review-text">
+                    "Had a wonderful experience with Kingsland holiday travel agency…. They have made our two dham trip
+                    so comfortable that even our 6 month old baby was also enjoying d trip….. they have give every
+                    minute details regarding d trip n it made me easy to carry my child…"
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
+            </div>
+            <!-- Duplicate reviews for smooth infinite scroll -->
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Meera Kanneri</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <p class="review-text">
+                    "We had a fantastic experience with the Kingsland Holidays while planning our Rajasthan trip! A big
+                    thanks to Rohit for considering all our requirements and arranging everything perfectly, especially
+                    while traveling with elderly family members."
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Apoorv Sinha</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <p class="review-text">
+                    "Had a wonderful time in Rajasthan with Kingsland Holiday. They planned everything perfectly and
+                    according to my needs - the trip covered all the places in Jodhpur, Jaisalmer and Udaipur. Special
+                    mention of our cab driver Mr. Dara Singh ji who added that…"
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Jaideep singh Jatain</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <p class="review-text">
+                    "We had an amazing trip to Gujarat at Statue of Unity and all the thanks to Kingsland Holiday for
+                    that. Our trip was planned by Mr. Mohit who remotely assisted us in best way possible, was always
+                    available at any hour of the day and made sure of everything requirement..."
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Payal Malekar</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <p class="review-text">
+                    "I want to thank you for providing us with a wonderful travel experience with Kingsland holidays .
+                    Everything was planned and organized perfectly, and we enjoyed the trip immensely. It was one of the
+                    best trips we ever had!
+
+                    Our driver Sunder Singh was very helpful throughout the journey…"
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
+            </div>
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-name">Nitisha Chauhan</div>
+                    <div class="review-rating">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                </div>
+                <p class="review-text">
+                    "Had a wonderful experience with Kingsland holiday travel agency…. They have made our two dham trip
+                    so comfortable that even our 6 month old baby was also enjoying d trip….. they have give every
+                    minute details regarding d trip n it made me easy to carry my child…"
+                </p>
+                <div class="review-header">
+                    <div></div>
+                    <img height="30" width="30"
+                        src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/revision.png'); ?>"
+                        alt="Google Review">
+                </div>
             </div>
         </div>
+
+    </section>
+
+    <section class="published-package destination-package">
         <?php
-    }
-    ?>
+        // Get the saved destinations from the post meta
+        $destinations = get_post_meta(get_the_ID(), 'destinations', true);
+
+        if (!empty($destinations) && is_array($destinations)) {
+            ?>
+            <div class="package-container-wrapper">
+                <h2 style="text-align:center">Destinations</h2>
+                <div class="package-container destination-container">
+                    <?php foreach ($destinations as $destination) { ?>
+                        <div class="package-card destination-card">
+                            <a href="<?php echo esc_url($destination['destination_url']); ?>" target="_blank">
+                                <?php if (!empty($destination['image'])) { ?>
+                                    <img src="<?php echo esc_url($destination['image']); ?>" class="package-image"
+                                        alt="<?php echo esc_attr($destination['name']); ?>">
+                                    <div class="">
+                                        <h3 style="text-align:center;"><?php echo esc_html($destination['name']); ?></h3>
+                                    </div>
+                                </a>
+                            <?php } ?>
+                        </div>
+                    <?php } ?>
+                </div>
+                <span class="show-only-mob">
+                    <button class="destination-class-arrow scroll-left" onclick="scrollDestinations(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="destination-class-arrow scroll-right" onclick="scrollDestinations(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </span>
+            </div>
+            <?php
+        }
+        ?>
+    </section>
+
+    <script>
+        function scrollDestinations(direction) {
+            const container = document.querySelector('.destination-container');
+            const scrollAmount = container.offsetWidth / 2; // Adjust the scroll amount as needed
+            container.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+        // Hide arrows if no scroll is needed
+        const checkScrollDestinations = () => {
+            const container = document.querySelector('.destination-container');
+            const leftArrow = document.querySelector('.destination-class-arrow.scroll-left');
+            const rightArrow = document.querySelector('.destination-class-arrow.scroll-right');
+
+            const canScrollLeft = container.scrollLeft > 0;
+            const canScrollRight = container.scrollLeft < container.scrollWidth - container.clientWidth;
+
+            leftArrow.style.display = canScrollLeft ? 'flex' : 'none';
+            rightArrow.style.display = canScrollRight ? 'flex' : 'block';
+        };
+
+        const destinationContainer = document.querySelector('.destination-container');
+        destinationContainer.addEventListener('scroll', checkScrollDestinations);
+        window.addEventListener('resize', checkScrollDestinations);
+        checkScrollDestinations(); // Initial check
+    </script>
+
 
     <style>
-        .destination-con {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            grid-gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
+        .destination-container {
+            flex-wrap: wrap;
         }
 
-        .destination {
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .show-only-mob {
+            display: none;
         }
 
-        .destination img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background-color: #f0f0f0;
-            background-size: cover;
-            background-position: center;
+        .destination-class-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .destination-class-arrow.scroll-left {
+            left: 0;
+        }
+
+        .destination-class-arrow.scroll-right {
+            right: 0;
         }
 
         .destination-info {
@@ -1516,15 +1582,6 @@ $package = [
             font-weight: 600;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
-        }
-
-        /* Import Google Font */
-        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap');
-
         /* Container Styles */
         .published-package {
             width: 80%;
@@ -1537,10 +1594,10 @@ $package = [
         .package-container-wrapper {
             position: relative;
             overflow: hidden;
-            padding: 0 20px;
+
         }
 
-        .package-container {
+            {
             display: flex;
             flex-direction: row;
             gap: 20px;
@@ -1559,7 +1616,7 @@ $package = [
         }
 
         /* Card Styles */
-        .package-card {
+        .package-container .package-card {
             flex: 0 0 calc(25% - 15px);
             /* Show 4 cards */
             min-width: 280px;
@@ -1659,19 +1716,32 @@ $package = [
             .published-package {
                 width: 95%;
             }
+
+            .destination-container {
+                flex-wrap: nowrap;
+            }
+
+            .show-only-mob {
+                display: block;
+            }
         }
     </style>
     <script>
         function toggleTaq(element) {
             const dayLabel = element.nextElementSibling;
             const dayTagsInTitle = element.querySelectorAll('.day-title .day-tags');
+            const arrow = element.querySelector('.arrow i');
 
             if (dayLabel.style.display === 'none' || dayLabel.style.display === '') {
                 dayLabel.style.display = 'block';
                 dayTagsInTitle.forEach(tag => tag.style.display = 'none');
+                arrow.classList.remove('fa-chevron-down');
+                arrow.classList.add('fa-chevron-up');
             } else {
                 dayLabel.style.display = 'none';
                 dayTagsInTitle.forEach(tag => tag.style.display = 'inline');
+                arrow.classList.remove('fa-chevron-up');
+                arrow.classList.add('fa-chevron-down');
             }
         }
     </script>
@@ -1842,7 +1912,8 @@ $package = [
         }
 
     </script>
-    <script>function toggleContactForm() {
+    <script>
+        function toggleContactForm() {
             var contactButton = document.getElementById('contactButton');
             var contactForm = document.getElementById('contactForm');
 

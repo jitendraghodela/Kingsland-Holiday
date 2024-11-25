@@ -11,15 +11,18 @@ document
     var itineraryRepeater = document.getElementById("itinerary-repeater");
     var newIndex = itineraryRepeater.children.length;
     var newItineraryItem = `
-<div class="itinerary-item" style="margin-bottom: 10px;">
-<input type="text" name="itinerary[${newIndex}][day_title]" placeholder="Day Title" style="width: 100%; margin-right: 2%;" />
+    <div class="itinerary-item" style="margin-bottom: 10px;">
+      <input type="text" name="itinerary[${newIndex}][day_title]" placeholder="Day Title" value=""
+        style="width: 100%; margin-bottom: 5px;" />
 
-<input type="text" name="itinerary[${newIndex}][day_tags]" placeholder="Day tags"
-                              style="width: 100%; margin-right: 2%" />
+      <input type="text" name="itinerary[${newIndex}][day_tags]" placeholder="Day Tags (comma-separated)" value="" 
+        style="width: 100%; margin-bottom: 5px;" />
 
-<input type="text" name="itinerary[${newIndex}][day_label]" placeholder="Day activities" style="width: 100%; margin-right: 2%;" />
-<button type="button" class="remove-itinerary-btn">Remove</button>
-</div>`;
+      <textarea name="itinerary[${newIndex}][day_label]" placeholder="Day Activities"
+        style="width: 100%; margin-bottom: 5px;"></textarea>
+
+      <button type="button" class="remove-itinerary-btn button">Remove Day</button>
+    </div>`;
     itineraryRepeater.insertAdjacentHTML("beforeend", newItineraryItem);
   });
 
@@ -58,6 +61,9 @@ document.getElementById("add-hotel-btn").addEventListener("click", function () {
       <div style="display:inline">
         <input type="text" name="hotels[${newIndex}][name]" placeholder="Hotel Name" />
         <input type="text" name="hotels[${newIndex}][address]" placeholder="Hotel Address" />
+        <p class="note">
+          Note: Write city in 2nd Last
+        </p>
       </div>
       <input type="hidden" name="hotels[${newIndex}][image]" value="" />
       <select name="hotels[${newIndex}][rating]" style="width: 20%; height:10%">

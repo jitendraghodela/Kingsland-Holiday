@@ -2,13 +2,13 @@
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
 
+
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
 class Kingsland_Travel_Package_Widget extends Widget_Base
 {
-    // Previous get_name(), get_title(), get_icon(), get_categories() methods remain the same...
 
     /**
      * Get all tour categories
@@ -16,20 +16,39 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
      */
     private function get_tour_categories()
     {
-        $categories = get_terms([
-            'taxonomy' => 'category',
-            'hide_empty' => false,
-        ]);
+        try {
+            // Default options
+            $category_options = [
+                'all' => __('All Categories', 'kingsland-custom-widget')
+            ];
 
-        $category_options = ['all' => __('All Categories', 'kingsland-custom-widget')];
+            // Get categories with error handling
+            $categories = get_terms([
+                'taxonomy' => 'category',
+                'hide_empty' => false,
+            ]);
 
-        if (!is_wp_error($categories) && !empty($categories)) {
-            foreach ($categories as $category) {
-                $category_options[$category->slug] = $category->name;
+            // Check for WP_Error
+            if (is_wp_error($categories)) {
+                error_log('Category fetch error: ' . $categories->get_error_message());
+                return $category_options;
             }
-        }
 
-        return $category_options;
+            // Check for null/empty
+            if (!empty($categories) && is_array($categories)) {
+                foreach ($categories as $category) {
+                    if (isset($category->slug) && isset($category->name)) {
+                        $category_options[$category->slug] = $category->name;
+                    }
+                }
+            }
+
+            return $category_options;
+
+        } catch (Exception $e) {
+            error_log('Error getting categories: ' . $e->getMessage());
+            return ['all' => __('All Categories', 'kingsland-custom-widget')];
+        }
     }
 
     public function get_name()
@@ -74,18 +93,6 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
             ]
         );
 
-        $this->add_control(
-            'layout',
-            [
-                'label' => __('Layout', 'kingsland-custom-widget'),
-                'type' => Controls_Manager::SELECT,
-                'default' => 'list',
-                'options' => [
-                    'list' => __('List', 'kingsland-custom-widget'),
-                    'grid' => __('Grid', 'kingsland-custom-widget'),
-                ],
-            ]
-        );
 
         $this->add_control(
             'choose_category_tour',
@@ -124,6 +131,19 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
                 'default' => 1,
                 'min' => 1,
                 'max' => 50,
+            ]
+        );
+
+        $this->add_control(
+            'layout',
+            [
+                'label' => __('Layout', 'kingsland-custom-widget'),
+                'type' => Controls_Manager::SELECT,
+                'default' => 'List',    
+                'options' => [
+                    'grid' => __('Grid', 'kingsland-custom-widget'),
+                    'list' => __('List', 'kingsland-custom-widget'),
+                ],
             ]
         );
 
@@ -203,41 +223,36 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
         $settings = $this->get_settings_for_display();
         $query = $this->get_tour_packages($settings);
 
-        // Start output buffering
-        ob_start();
-
         if ($query->have_posts()) {
-            echo '<div class="travel-package-wrapper ' . esc_attr($settings['layout']) . '-layout">';
+            // Add grid-specific wrapper class
+            $layout_class = $settings['layout'] === 'grid' ? 'travel-grid-wrapper' : 'travel-list-wrapper';
 
-            if ($query->have_posts()) {
-                // Add category filter buttons if needed
-                if ($settings['choose_category_tour'] === 'all') {
-                    $categories = get_terms([
-                        'taxonomy' => 'tour_category',
-                        'hide_empty' => true,
-                    ]);
-                    if (!is_wp_error($categories) && !empty($categories)) {
-                        echo '<div class="tour-category-filters">';
-                        echo '<button class="category-filter active" data-category="all">' . __('All', 'kingsland-custom-widget') . '</button>';
-                        foreach ($categories as $category) {
-                            echo '<button class="category-filter" data-category="' . esc_attr($category->slug) . '">'
-                                . esc_html($category->name) . '</button>';
-                        }
-                        echo '</div>';
+            echo '<div class="travel-package-wrapper ' . esc_attr($layout_class) . '">';
+
+            // Category filters section
+            if ($settings['choose_category_tour'] === 'all') {
+                $categories = get_terms([
+                    'taxonomy' => 'tour_category',
+                    'hide_empty' => true,
+                ]);
+                if (!is_wp_error($categories) && !empty($categories)) {
+                    echo '<div class="tour-category-filters">';
+                    echo '<button class="category-filter active" data-category="all">' . __('All', 'kingsland-custom-widget') . '</button>';
+                    foreach ($categories as $category) {
+                        echo '<button class="category-filter" data-category="' . esc_attr($category->slug) . '">'
+                            . esc_html($category->name) . '</button>';
                     }
+                    echo '</div>';
                 }
+            }
+
+            // Grid container for grid layout
+            if ($settings['layout'] === 'grid') {
+                echo '<div class="travel-grid-container">';
             }
 
             while ($query->have_posts()) {
                 $query->the_post();
-                // Get post categories
-                $post_categories = get_the_terms(get_the_ID(), 'tour_category');
-                $category_classes = '';
-                if (!is_wp_error($post_categories) && !empty($post_categories)) {
-                    foreach ($post_categories as $cat) {
-                        $category_classes .= ' category-' . $cat->slug;
-                    }
-                }
 
                 // Get post meta with default values
                 $price = get_post_meta(get_the_ID(), 'price', true) ?: 'N/A';
@@ -247,11 +262,16 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
                 $duration = get_post_meta(get_the_ID(), 'duration', true) ?: 'Duration not specified';
                 $trip_location = get_post_meta(get_the_ID(), 'trip_location', true) ?: 'Location not specified';
 
+                // Grid item class based on layout
+                $item_class = $settings['layout'] === 'grid' ? 'travel-grid-item' : 'travel-list-item';
                 ?>
-                <div class="travel-package-card">
-                    <div class="package-image-section">
+
+
+                <div class="travel-package-card <?php echo esc_attr($item_class); ?>">
+                    <div class="package-image-section" style="cursor: pointer;"
+                        onclick="window.location.href='<?php the_permalink(); ?>'">
                         <?php if (has_post_thumbnail()): ?>
-                            <?php the_post_thumbnail('large', array('class' => 'package-image', 'style' => 'width: 100%; height: 100%;')); ?>
+                            <?php the_post_thumbnail('large', array('class' => 'package-image')); ?>
                         <?php endif; ?>
 
                         <?php if ($discount): ?>
@@ -262,51 +282,45 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
                         <?php endif; ?>
 
                         <div class="features-row">
-                            <!-- add service-icons from product -->
-
                             <?php
                             $services = maybe_unserialize(get_post_meta(get_the_ID(), 'services', true));
                             if (!empty($services) && is_array($services)):
                                 foreach ($services as $service_icon):
-                                    if ($service_icon === 'hotel'): ?>
-                                        <span class="feature-badge">
-                                            <i class="fas fa-hotel">
-                                                <p>Hotel</p>
-                                            </i>
-                                        </span>
-
-                                    <?php elseif ($service_icon === 'utensils'): ?>
-                                        <span class="feature-badge">
-                                            <i class="fas fa-utensils">
-                                                <p>Meal</p>
-                                            </i>
-                                        </span>
-                                    <?php elseif ($service_icon === 'car'): ?>
-                                        <span class="feature-badge">
-                                            <i class="fas fa-car">
-                                                <p>Cab</p>
-                                            </i>
-                                        </span>
-
-                                    <?php endif;
+                                    switch ($service_icon) {
+                                        case 'hotel':
+                                            echo '<span class="feature-badge">
+                                                    <i class="fas fa-hotel"><p>Hotel</p></i>
+                                                  </span>';
+                                            break;
+                                        case 'utensils':
+                                            echo '<span class="feature-badge">
+                                                    <i class="fas fa-utensils"><p>Meal</p></i>
+                                                  </span>';
+                                            break;
+                                        case 'car':
+                                            echo '<span class="feature-badge">
+                                                    <i class="fas fa-car"><p>Cab</p></i>
+                                                  </span>';
+                                            break;
+                                    }
                                 endforeach;
-                            endif; ?>
-                            <!-- <span class="feature-badge">sightseeing</span>
-                            <span class="feature-badge">Meals</span>
-                            <span class="feature-badge">Cab</span> -->
+                            endif;
+                            ?>
                             <span class="feature-badge"><?php echo esc_html($hotel_star); ?></span>
                         </div>
                     </div>
 
                     <div class="package-details">
-                        <h2 class="package-title"><?php the_title(); ?></h2>
+                        <h2 style="cursor: pointer;" onclick="window.location.href='<?php the_permalink(); ?>'" class="package-title">
+                            <?php the_title(); ?>
+                        </h2>
 
-                        <?php if ($duration): ?>
-                            <div class="package-meta">
+                        <div class="package-meta">
+                            <?php if ($duration): ?>
                                 <span><?php echo esc_html($duration); ?></span>
-                                <span><?php echo esc_html($hotel_star); ?> Hotels Included</span>
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
+                            <span><?php echo esc_html($hotel_star); ?> Hotels</span>
+                        </div>
 
                         <div class="price-section">
                             <?php if ($price !== 'N/A'): ?>
@@ -330,65 +344,33 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
 
                         <div class="action-buttons">
                             <a href="<?php the_permalink(); ?>" class="view-deal">View Deal</a>
-
-                            <a href="<?php echo esc_url(add_query_arg('request_callback', 'true', get_permalink())); ?>"
-                                class="check-availability">Request Callback</a>
+                            <button class="check-availability" onclick="window.location.href='tel:+916376983416'">Call Us</button>
                         </div>
                     </div>
+                    <!-- add button for scrolling and make dyn -->
                 </div>
+
+
                 <?php
+            }
+
+            // Close grid container if in grid layout
+            if ($settings['layout'] === 'grid') {
+                echo '</div>';
             }
 
             echo '</div>';
             wp_reset_postdata();
         } else {
             echo '<div class="no-packages-found">';
-            echo __('No packages found. Please check your widget settings and ensure you have published tour packages.', 'kingsland-custom-widget');
+            echo __('No packages found. Please check your widget settings.', 'kingsland-custom-widget');
             echo '</div>';
         }
-
-        // End output buffering and echo content
-        echo ob_get_clean();
     }
 
-    protected function content_template()
-    {
-        ?>
-        <div class="travel-package-wrapper {{ settings.layout }}-layout">
-            <div class="travel-package-card">
-                <div class="package-image-section">
-                    <img src="<?php echo plugins_url('assets/placeholder.jpg', __FILE__); ?>" alt="Package"
-                        class="package-image">
-                    <div class="discount-badge">Winter Deal<div>23% off</div>
-                    </div>
-                    <div class="features-row">
 
-                        <span class="feature-badge">Cab</span>
-                        <span class="feature-badge">Meals</span>
-                        <span class="feature-badge">sightseeing</span>
-                        <span class="feature-badge">Upto 4 Stars</span>
-                    </div>
-                </div>
-                <div class="package-details">
-                    <h2 class="package-title">Sample Package Title</h2>
-                    <div class="package-meta"><span>5 Days & 4 Nights</span></div>
-                    <div class="price-section">
-                        <span class="price">₹73,999/-</span>
-                        <span class="original-price">₹96,199/-</span>
-                        <span class="discount-tag">23% Off</span>
-                        <div class="price-note">Per Person on twin sharing</div>
-                    </div>
-                    <div class="cities">Cities: Sample City (5D)</div>
-                    <div class="action-buttons">
-                        <a href="#" class="view-deal">View Deal</a>
-                        <a href="#" class="check-availability">Request Callback</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php
-    }
 }
+
 
 // Register the widget
 function register_kingsland_travel_package_widget($widgets_manager)
@@ -403,4 +385,5 @@ function register_kingsland_travel_package_widget($widgets_manager)
 add_action('elementor/widgets/register', 'register_kingsland_travel_package_widget');
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
 });

@@ -4,6 +4,31 @@ body {
     box-sizing: border-box;
 }
 
+.package-display-settings {
+    background: #fff;
+    padding: 15px;
+    border: 1px solid #ddd;
+    margin-top: 15px;
+}
+
+.display-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.price-range-settings,
+.package-limit {
+    margin-top: 15px;
+}
+
+.price-range-settings input,
+.package-limit input {
+    width: 80px;
+    margin-left: 10px;
+}
+
 /* Sidebar container */
 .admon-css-sidebar {
     margin-top: 50px;
