@@ -1,4 +1,12 @@
 <?php
+/**
+ * Uninstall file for Kingsland Tour Packages plugin
+ * 
+ * @package Kingsland_Tour_Packages
+ * @version 1.0.0
+ * 
+ */
+
 // Exit if uninstall not called from WordPress
 if (!defined('WP_UNINSTALL_PLUGIN')) {
     exit;

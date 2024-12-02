@@ -1,8 +1,9 @@
+// Description: Custom JS file for Kings Theme
+// Used in: All pages
 // Author: jitendra ghodela
+// Created: 26/11/2024
 // make sure to add this file in the main js file
-
 // Destinations
-
 // section ens
 
 document
