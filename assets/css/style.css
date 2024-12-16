@@ -302,7 +302,6 @@
  }
 
  .itinerary-scroll-container {
-     max-height: 589px;
      overflow-y: auto;
      padding-right: 10px;
      /* Custom Scrollbar */

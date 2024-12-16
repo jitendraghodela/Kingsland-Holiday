@@ -1,4 +1,13 @@
 <?php
+/**
+ * Template Name: Kingsland Tour Package
+ * Description: A custom template for displaying a single tour package
+ *
+ * @package Kingsland_Tour_Packages
+ * @version 1.0.0
+ * @since 1.0.0
+ */
+
 // Ensure this code is placed at the beginning of the template file
 require_once(ABSPATH . 'wp-load.php');
 require_once(ABSPATH . 'wp-includes/class-wp-query.php');
@@ -324,7 +333,69 @@ $package = [
                 opacity: 1;
             }
         }
+
+        .faq-div {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .faq-ques {
+            width: 60%;
+
+        }
+
+        .faq-img {
+            width: 40%;
+            padding-left: 10%;
+        }
+
+        .faq-img img {
+            height: 300px;
+            width: 300px;
+            object-fit: cover;
+        }
+
+        .whatsapp-btn {
+            background: #128C7E !important;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+
+        }
+
+        .whatsapp-btn:hover {
+            background: #20a397 !important;
+            transform: translateY(-2px);
+        }
+
+        .whatsapp-btn i {
+            font-size: 20px;
+        }
     </style>
+    <?php
+    // Get WhatsApp number from options
+    $whatsapp_number = preg_replace('/[^0-9]/', '', get_option('kingsland_whatsapp_number', '+916376983416'));
+    $package_title = get_the_title();
+    $price = get_post_meta(get_the_ID(), 'price', true);
+    $duration = get_post_meta(get_the_ID(), 'duration', true);
+
+    // Build message
+    $message = "Hi, I'm interested in {$package_title}";
+    if ($duration) {
+        $message .= " ({$duration})";
+    }
+    if ($price) {
+        $message .= " - ₹{$price}/-";
+    }
+    ?>
 </head>
 
 <body>
@@ -433,16 +504,17 @@ $package = [
                 <div class="details">
                     <div class="hotel-info mob-only">
                         <!-- <h4><?php echo esc_html($package['title']); ?> </h4> -->
-                        <strong>
-                            <p>
-                                Cities: <?php echo esc_html($package['location']); ?>
-                            </p>
-                            <p>
-                                <?php echo esc_html($package['duration']); ?>
-                                | <strong><?php echo esc_html($package['hotel_star']); ?></strong> Hotel included in
-                                package
-                            </p>
-                        </strong>
+
+
+                        <p>
+                        <h2 style="display:inline;"> Cities: </h2> <?php echo esc_html($package['location']); ?>
+                        </p>
+                        <p>
+                            <?php echo esc_html($package['duration']); ?>
+                            | <strong><?php echo esc_html($package['hotel_star']); ?></strong> Hotel included in
+                            package
+                        </p>
+
 
                     </div>
                     <div class="hotel-info desktop-only">
@@ -457,14 +529,15 @@ $package = [
                             </p>
                         </strong>
                         <p>
-                            <strong><?php echo esc_html($package['hotel_star']); ?></strong> Hotel included in
-                            package
+                            <strong><?php echo esc_html($package['hotel_star']); ?></strong> Hotel Included In
+                            Package
                         </p>
 
                     </div>
                     <div class="price-section" style="margin:0;">
                         <h3 class="price">₹<?php echo esc_html($package['price']); ?>/-</h3>
                         <h3 class="old-price">₹<?php echo esc_html($package['old_price']); ?>/-</h3>
+
                         <span class="discount">
 
                             <?php echo esc_attr($package['discount']); ?>
@@ -486,6 +559,7 @@ $package = [
                             ?>
 
                         </span>
+                        <p>Double Sharing</p>
                         <!-- <p class="rating">Rated <?php echo esc_html($package['rating']); ?> (based on reviews)</p> -->
                     </div>
                 </div>
@@ -526,8 +600,13 @@ $package = [
                         </div>
                     </div>
 
-                    <a class="check-availability" href="#contact" onclick="showContactForm()">Contact With Our
-                        Expert</a>
+                    <a class="check-availability whatsapp-btn"
+                        href="https://wa.me/<?php echo esc_attr($whatsapp_number); ?>?text=<?php echo urlencode($message); ?>"
+                        target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Enquire on WhatsApp</span>
+                    </a>
+
                     <!-- <div class="package-info">
 
                     </div> -->
@@ -900,7 +979,7 @@ $package = [
                                     <?php
                                     // Extract city from the address
                                     $address_parts = explode(',', $hotel['address']);
-                                    $city = $address_parts[count($address_parts) - 2]; // Assuming the city is the second last part of the address
+                                    $city = count($address_parts) > 1 ? $address_parts[count($address_parts) - 2] : $address_parts[0]; // Show the word if only one part
                                     ?>
                                     <p><?php echo esc_html($city); ?></p>
                                 </div>
@@ -909,7 +988,7 @@ $package = [
                             <!-- Hotel Popup Modal -->
                             <div id="hotel-popup" class="hotel-popup" onclick="closeHotelPopup(event)">
                                 <div class="hotel-popup-content">
-                                    <span class="hotel-c-close" onclick="closeHotelPopup()">&times;</span>
+                                    
                                     <button class="hotel-a-prev" onclick="changeHotel(-1)">❮</button>
                                     <img id="hotel-popup-img" src="" alt="Hotel Image" class="hotel-popup-img">
                                     <button class="hotel-a-next" onclick="changeHotel(1)">❯</button>
@@ -1017,7 +1096,7 @@ $package = [
 
 
     <!-- FAQ Section -->
-    <div class="faq-container" id="faq">
+    <div class="faq-container mob-only" id="faq">
         <h2>FAQs About <?php echo esc_html($package['title']); ?> Tour Packages</h2>
         <?php if (is_array($package['faqs'])): ?>
             <?php foreach ($package['faqs'] as $faq): ?>
@@ -1034,6 +1113,30 @@ $package = [
         <?php endif; ?>
     </div>
 
+    <div class="faq-container desktop-only" id="faq">
+        <h2>FAQs About <?php echo esc_html($package['title']); ?> Tour Packages</h2>
+        <div class="faq-div">
+            <div class="faq-ques">
+                <?php if (is_array($package['faqs'])): ?>
+                    <?php foreach ($package['faqs'] as $faq): ?>
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFaq(this)">
+                                <span class="icon">Q</span> <?php echo esc_html($faq['question']); ?>
+                                <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+                            </div>
+                            <div class="faq-answer" style="display: none;">
+                                <p><?php echo esc_html($faq['answer']); ?></p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+            <div class="faq-img">
+                <img src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/images/faq-travel-agent.png'); ?>"
+                    alt="">
+            </div>
+        </div>
+    </div>
     <div class="fixed-buttons" id="contactButton">
         <?php
         $phone_number = get_option('plugin_phone_number', 'default_phone_number');
@@ -1057,7 +1160,7 @@ $package = [
                 // Query arguments for recently published packages
                 $recent_packages_args = array(
                     'post_type' => 'tour_package',
-                    'posts_per_page' => 6,
+                    'posts_per_page' => -1,
                     'post_status' => 'publish',
                     'post__not_in' => array($current_id),
                     'orderby' => 'date',
@@ -1856,6 +1959,8 @@ $package = [
                         mobileTabs[index].classList.add("active");
 
                         // Scroll the mobile-tabs element to keep the active tab in view
+
+
                         var activeTab = mobileTabs[index];
                         var tabsContainer = document.querySelector(".mobile-tabs");
                         var tabOffsetLeft = activeTab.offsetLeft;
@@ -2129,6 +2234,7 @@ $package = [
             .querySelector(".modal-overlay")
             .addEventListener("click", hideContactForm);
     </script>
+
     <?php get_footer(); ?>
 </body>
 

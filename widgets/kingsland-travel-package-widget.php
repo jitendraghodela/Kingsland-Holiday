@@ -1,4 +1,9 @@
 <?php
+// Wiget for displaying travel packages As Grid OR List
+// Elementor\Widget_Base is the base class for all widgets
+// Author: Jitendra Ghodela
+// Version: 1.0.0
+
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
 
@@ -110,19 +115,36 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
             ]
         );
 
+
+
+        // Update order control
         $this->add_control(
             'order',
             [
                 'label' => __('Order', 'kingsland-custom-widget'),
-                'type' => Controls_Manager::SELECT,
-                'default' => 'ascending',
+                'type' => \Elementor\Controls_Manager::SELECT,
+                'default' => 'Ascending',
                 'options' => [
                     'ascending' => __('Ascending', 'kingsland-custom-widget'),
                     'descending' => __('Descending', 'kingsland-custom-widget'),
+
                 ],
             ]
         );
+        // Add in register_controls() method after other controls
+        $this->add_control(
+            'contact_number',
+            [
+                'label' => __('Contact Number', 'kingsland-custom-widget'),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'default' => '+916376983416',
+                'placeholder' => '+91XXXXXXXXXX',
+                'description' => __('Enter WhatsApp number with country code', 'kingsland-custom-widget'),
+                'label_block' => true,
+            ]
+        );
 
+        // filter for number of items to display a(int) to d(int)  and e(int) to g(int) or z(int) to b(int) in order show
         $this->add_control(
             'number_items',
             [
@@ -134,12 +156,13 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
             ]
         );
 
+
         $this->add_control(
             'layout',
             [
                 'label' => __('Layout', 'kingsland-custom-widget'),
                 'type' => Controls_Manager::SELECT,
-                'default' => 'List',    
+                'default' => 'List',
                 'options' => [
                     'grid' => __('Grid', 'kingsland-custom-widget'),
                     'list' => __('List', 'kingsland-custom-widget'),
@@ -182,6 +205,8 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
             ]
         );
 
+
+
         $this->end_controls_section();
     }
 
@@ -193,11 +218,40 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
             'posts_per_page' => intval($settings['number_items']),
             'post_status' => 'publish',
             'orderby' => 'date',
-            'order' => $settings['order'] === 'ascending' ? 'ASC' : 'DESC',
             'cache_results' => true,
             'update_post_meta_cache' => true,
             'update_post_term_cache' => true,
         );
+        // Handle different order scenarios
+        switch ($settings['order']) {
+            case 'ascending':
+                $query_args['order'] = 'ASC';
+                $query_args['orderby'] = 'date';
+                break;
+
+            case 'descending':
+                $query_args['order'] = 'DESC';
+                $query_args['orderby'] = 'date';
+                break;
+
+            case 'custom':
+                // Custom order handling
+                $custom_order = !empty($settings['custom_post_order'])
+                    ? explode(',', $settings['custom_post_order'])
+                    : [];
+
+                if (!empty($custom_order)) {
+                    // Sanitize and validate the custom order
+                    $custom_order = array_map('intval', $custom_order);
+                    $custom_order = array_filter($custom_order);
+
+                    if (!empty($custom_order)) {
+                        $query_args['orderby'] = 'post__in';
+                        $query_args['post__in'] = $custom_order;
+                    }
+                }
+                break;
+        }
 
         // Add category filter if not 'all'
         if ($settings['choose_category'] !== 'all') {
@@ -220,6 +274,7 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
 
     protected function render()
     {
+
         $settings = $this->get_settings_for_display();
         $query = $this->get_tour_packages($settings);
 
@@ -306,7 +361,9 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
                                 endforeach;
                             endif;
                             ?>
-                            <span class="feature-badge"><?php echo esc_html($hotel_star); ?></span>
+                            <span class="feature-badge">
+                                <i class="fas fa-star" style="color: #FFD700;"></i>
+                                <?php echo esc_html($hotel_star); ?></span>
                         </div>
                     </div>
 
@@ -335,7 +392,7 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
                                 <span class="discount-tag"><?php echo esc_html($discount); ?>% Off</span>
                             <?php endif; ?>
 
-                            <div class="price-note">Per Person on twin sharing</div>
+                            <div class="price-note">On Double sharing</div>
                         </div>
 
                         <?php if ($trip_location): ?>
@@ -344,12 +401,278 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
 
                         <div class="action-buttons">
                             <a href="<?php the_permalink(); ?>" class="view-deal">View Deal</a>
-                            <button class="check-availability" onclick="window.location.href='tel:+916376983416'">Call Us</button>
+                            <a href="https://wa.me/<?php
+                            // Remove non-numeric chars from number
+                            $number = preg_replace('/[^0-9]/', '', $settings['contact_number']);
+                            echo esc_attr($number);
+                            ?>?text=Hi, I'm interested in <?php echo esc_attr(get_the_title()); ?>" target="_blank"
+                                class="check-availability whatsapp-btn">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
                         </div>
                     </div>
                     <!-- add button for scrolling and make dyn -->
                 </div>
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 0;
+                    }
 
+                    /* Enhanced Grid Layout Styles */
+                    .travel-package-wrapper.grid-layout {
+                        padding: 30px;
+                        max-width: 300px;
+                        margin: 0 auto;
+                        background: #f8f9fa;
+                    }
+
+                    .travel-grid-container {
+
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                        gap: 30px;
+                        margin-top: 30px;
+                    }
+
+                    /* Card Styling */
+                    .travel-grid-item {
+                        width: 344px;
+                        background: #fff;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        height: 498px;
+                        display: flex;
+                        flex-direction: column;
+                        border: 1px solid rgba(0, 0, 0, 0.05);
+                    }
+
+                    .travel-grid-item:hover {
+                        transform: translateY(-5px);
+                        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+                    }
+
+                    /* Image Section */
+                    .travel-grid-item .package-image-section {
+                        position: relative;
+
+                        overflow: hidden;
+                    }
+
+                    .travel-grid-item .package-image {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        transition: transform 0.5s ease;
+                    }
+
+                    .travel-grid-item:hover .package-image {
+                        transform: scale(1.05);
+                    }
+
+                    /* Discount Badge */
+                    .travel-grid-item .discount-badge {
+                        position: absolute;
+                        top: 15px;
+                        left: 15px;
+                        background: linear-gradient(45deg, #ff5a5f, #ff4757);
+                        color: #fff;
+                        padding: 8px 15px;
+                        border-radius: 25px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        box-shadow: 0 2px 8px rgba(255, 90, 95, 0.3);
+                    }
+
+                    /* Features Row */
+                    .travel-grid-item .features-row {
+                        position: absolute;
+                        bottom: 5px;
+                        left: 15px;
+                        right: 15px;
+                        display: flex;
+                        gap: 10px;
+                        background: rgba(255, 255, 255, 0.95);
+                        padding: 1px;
+                        border-radius: 9px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .travel-grid-item .feature-badge {
+                        display: flex;
+                        align-items: center;
+                        font-size: 13px;
+                        color: #444;
+                    }
+
+                    .travel-grid-item .feature-badge i {
+                        margin-right: 5px;
+                        color: #20a397;
+                    }
+
+                    /* Content Section */
+                    .travel-grid-item .package-details {
+                        padding: 10px;
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                    }
+
+                    .travel-grid-item .package-title {
+                        margin: 0;
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: #2d3436;
+                        margin: 0 0 15px;
+                        line-height: 1.4;
+                    }
+
+                    .travel-grid-item .package-meta {
+                        margin: 0;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        font-size: 14px;
+                        color: #636e72;
+
+                    }
+
+                    /* Price Section */
+                    .travel-grid-item .price-section {
+                        margin: 0;
+                        display: flex;
+                        align-items: center;
+
+                        flex-wrap: wrap;
+                    }
+
+                    .travel-grid-item .price {
+                        font-size: 24px;
+                        font-weight: 700;
+                        color: #20a397;
+                    }
+
+                    .travel-grid-item .original-price {
+                        font-size: 16px;
+                        color: #b2bec3;
+                        text-decoration: line-through;
+                    }
+
+                    .travel-grid-item .discount-tag {
+                        background: #20a397;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        font-weight: 600;
+                    }
+
+                    .travel-grid-item .price-note {
+                        width: 100%;
+                        font-size: 12px;
+                        color: #7f8c8d;
+
+                    }
+
+                    .travel-grid-item .cities {
+                        font-size: 14px;
+                        color: #636e72;
+                        margin: 2px;
+                    }
+
+                    /* Action Buttons */
+                    .travel-grid-item .action-buttons {
+                        display: flex;
+                        gap: 15px;
+                        margin: 0;
+                    }
+
+                    .travel-grid-item .view-deal,
+                    .travel-grid-item .check-availability {
+                        flex: 1;
+                        padding: 12px 20px;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        text-align: center;
+                        transition: all 0.3s ease;
+                    }
+
+                    .travel-grid-item .view-deal {
+                        background: transparent;
+                        border: 2px solid #20a397;
+                        color: #20a397;
+                    }
+
+                    .travel-grid-item .check-availability {
+                        background: #20a397;
+                        color: white;
+                        border: none;
+                    }
+
+                    .travel-grid-item .view-deal:hover {
+                        background: #20a397;
+                        color: white;
+                    }
+
+                    .travel-grid-item .check-availability:hover {
+                        background: #178577;
+                    }
+
+                    /* Category Filters */
+                    .travel-package-wrapper .tour-category-filters {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 12px;
+                        margin-bottom: 30px;
+                    }
+
+                    .category-filter {
+                        padding: 10px 20px;
+                        border-radius: 25px;
+                        background: white;
+                        border: 1px solid #dfe6e9;
+                        color: #636e72;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    }
+
+                    .category-filter.active,
+                    .category-filter:hover {
+                        background: #20a397;
+                        color: white;
+                        border-color: #20a397;
+                    }
+
+
+                    /* Mobile View Adjustments */
+                    @media (max-width: 480px) {
+                        .travel-package-wrapper.grid-layout {
+                            /* padding: 15px; */
+                        }
+
+                        .travel-grid-container {
+                            display: flex;
+                            gap: 20px;
+                            overflow-x: auto;
+                            scroll-snap-type: x mandatory;
+                            -webkit-overflow-scrolling: touch;
+                            padding-bottom: 10px;
+                        }
+
+                        .travel-grid-item {
+                            flex: 0 0 80%;
+                            /* 80% of the screen width per card */
+                            scroll-snap-align: center;
+                        }
+
+                        .travel-grid-container::-webkit-scrollbar {
+                            display: none;
+                            /* Hide scrollbar */
+                        }
+                    }
+                </style>
 
                 <?php
             }

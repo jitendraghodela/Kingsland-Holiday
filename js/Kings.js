@@ -1,39 +1,10 @@
+// Description: Custom JS file for Kings Theme
+// Used in: All pages
 // Author: jitendra ghodela
+// Created: 26/11/2024
 // make sure to add this file in the main js file
-
 // Destinations
-
 // section ens
-
-document
-  .getElementById("add-itinerary-btn")
-  .addEventListener("click", function () {
-    var itineraryRepeater = document.getElementById("itinerary-repeater");
-    var newIndex = itineraryRepeater.children.length;
-    var newItineraryItem = `
-    <div class="itinerary-item" style="margin-bottom: 10px;">
-      <input type="text" name="itinerary[${newIndex}][day_title]" placeholder="Day Title" value=""
-        style="width: 100%; margin-bottom: 5px;" />
-
-      <input type="text" name="itinerary[${newIndex}][day_tags]" placeholder="Day Tags (comma-separated)" value="" 
-        style="width: 100%; margin-bottom: 5px;" />
-
-      <textarea name="itinerary[${newIndex}][day_label]" placeholder="Day Activities"
-        style="width: 100%; margin-bottom: 5px;"></textarea>
-
-      <button type="button" class="remove-itinerary-btn button">Remove Day</button>
-    </div>`;
-    itineraryRepeater.insertAdjacentHTML("beforeend", newItineraryItem);
-  });
-
-// Event delegation to handle removal of itinerary items
-document
-  .getElementById("itinerary-repeater")
-  .addEventListener("click", function (e) {
-    if (e.target && e.target.classList.contains("remove-itinerary-btn")) {
-      e.target.parentElement.remove();
-    }
-  });
 
 document.getElementById("add-faq-btn").addEventListener("click", function () {
   var faqRepeater = document.getElementById("faq-repeater");
@@ -231,3 +202,21 @@ document.querySelector(".close-btn").addEventListener("click", hideContactForm);
 document
   .querySelector(".modal-overlay")
   .addEventListener("click", hideContactForm);
+
+jQuery(document).ready(function ($) {
+  // Select All functionality
+  $("#select_all_services").on("change", function () {
+    var isChecked = $(this).prop("checked");
+    $('input[name="services[]"]').prop("checked", isChecked);
+  });
+
+  // Update Select All when individual checkboxes change
+  $('input[name="services[]"]').on("change", function () {
+    var totalServices = $('input[name="services[]"]').length;
+    var checkedServices = $('input[name="services[]"]:checked').length;
+    $("#select_all_services").prop(
+      "checked",
+      totalServices === checkedServices
+    );
+  });
+});

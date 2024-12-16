@@ -90,6 +90,7 @@ class Kingsland_Grid_Widget extends \Elementor\Widget_Base
                 ],
             ]
         );
+        
 
         $this->end_controls_section();
 
@@ -197,7 +198,7 @@ class Kingsland_Grid_Widget extends \Elementor\Widget_Base
                                             <div>
                                                 <span class="wid-price">₹<?php echo number_format((float) $price); ?>/-</span>
                                                 <span
-                                                    class="wid-per-person"><?php _e('per person', 'kingsland-custom-widget'); ?></span>
+                                                    class="wid-per-person"><?php _e('On Double', 'kingsland-custom-widget'); ?></span>
                                                 <div><?php echo esc_html($hotel_star); ?> Hotels Included</div>
 
                                             </div>
