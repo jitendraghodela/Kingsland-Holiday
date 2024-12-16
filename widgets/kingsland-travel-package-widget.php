@@ -645,7 +645,10 @@ class Kingsland_Travel_Package_Widget extends Widget_Base
                         border-color: #20a397;
                     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                     /* Mobile View Adjustments */
                     @media (max-width: 480px) {
                         .travel-package-wrapper.grid-layout {

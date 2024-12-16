@@ -2,6 +2,7 @@
 /**
  * Uninstall file for Kingsland Tour Packages plugin
  * 
+<<<<<<< HEAD
  * This file runs when the plugin is uninstalled from WordPress.
  * It cleans up all plugin-related data from the database and file system.
  * 
@@ -12,6 +13,16 @@
 // If uninstall not called from WordPress, exit
 if (!defined('WP_UNINSTALL_PLUGIN') || !WP_UNINSTALL_PLUGIN) {
     die;
+=======
+ * @package Kingsland_Tour_Packages
+ * @version 1.0.0
+ * 
+ */
+
+// Exit if uninstall not called from WordPress
+if (!defined('WP_UNINSTALL_PLUGIN')) {
+    exit;
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
 }
 
 // If multisite, handle each site separately

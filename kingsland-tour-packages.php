@@ -514,6 +514,10 @@ function kingsland_tour_package_details_callback($post)
         <div class="admon-css-content">
 
             <div id="accommodation" class="admon-css-tab-content active">
+<<<<<<< HEAD
+=======
+               
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                   <!-- Trip -->
                 <label for="trip_location">Cities:</label>
                 <input type="text" id="trip_location" name="trip_location"
@@ -568,6 +572,7 @@ function kingsland_tour_package_details_callback($post)
                 </div>
                     </div>
                 <label>Services:</label>
+<<<<<<< HEAD
                  <!-- Select All Services -->
                 <div style="margin-bottom: 10px;">
                         <input type="checkbox" id="select_all_services" 
@@ -580,6 +585,11 @@ function kingsland_tour_package_details_callback($post)
                         
                         <div>
                             
+=======
+                <div style="display:flex; width: 100%;     justify-content: space-evenly;">
+                    <?php foreach ($available_services as $service_key => $service_label): ?>
+                        <div>
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                             <input type="checkbox" id="services_<?php echo esc_attr($service_key); ?>" name="services[]"
                                 value="<?php echo esc_attr($service_key); ?>" <?php checked(in_array($service_key, (array) $fields['services'])); ?>>
                             <label
@@ -588,6 +598,7 @@ function kingsland_tour_package_details_callback($post)
                     <?php endforeach; ?>
                     
                 </div>
+<<<<<<< HEAD
                
 
                 <script>
@@ -606,11 +617,14 @@ function kingsland_tour_package_details_callback($post)
                     });
                 });
                 </script>
+=======
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                 <label for="highlights">Highlights (comma-separated):</label>
                 
                 <input type="text" id="highlights" name="highlights" value="<?php echo esc_attr($fields['highlights']); ?>"
                     style="width: 100%" />
             </div>
+<<<<<<< HEAD
 
             <div id="gallery" class="admon-css-tab-content">
                 <!-- Slideshow Section -->
@@ -698,6 +712,95 @@ function kingsland_tour_package_details_callback($post)
                             var imageInput = button.prev('input');
                             var previewImage = button.closest('.slideshow-item').find('img');
 
+=======
+
+            <div id="gallery" class="admon-css-tab-content">
+                <!-- Slideshow Section -->
+                <div class="slideshow-meta-section">
+                    <h4>Slideshow Images</h4>
+                    <div id="slideshow-items">
+                        <?php foreach ($fields['slideshow_images'] as $index => $image): ?>
+                            <div class="slideshow-item"
+                                style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; display:flex; gap:20px">
+                                <img src="<?php echo esc_url($image); ?>" alt="Slideshow Image"
+                                    style="max-width: 25%; height: 25%; margin-top: 10px;">
+                                <p>
+                                    <label>Caption:</label><br>
+                                    <input type="text" name="slideshow_captions[]"
+                                        value="<?php echo esc_attr(isset($fields['slideshow_captions'][$index]) ? $fields['slideshow_captions'][$index] : ''); ?>"
+                                        style="width: 100%;">
+                                    <!-- <label>Image URL:</label><br> -->
+                                    <!-- uploaded img show with -->
+
+                                    <input type="hidden" name="slideshow_images[]" value="<?php echo esc_attr($image); ?>">
+                                    <button type="button" class="upload-image button" style="margin-top: 5px;">Upload
+                                        Image</button>
+                                    <button type="button" class="remove-slide button"
+                                        style="width: 100px;height: 20px;    margin-left: 5px;    margin-top: 5px;">Remove
+                                        Slide</button>
+                                </p>
+                                <p>
+                                    <label>Position:</label><br>
+                                    <select name="slideshow_positions[]">
+
+                                        <option value="top-left" <?php selected(isset($fields['slideshow_positions'][$index]) ? $fields['slideshow_positions'][$index] : '', 'top-left'); ?>>Top Left</option>
+                                        <option value="top-right" <?php selected(isset($fields['slideshow_positions'][$index]) ? $fields['slideshow_positions'][$index] : '', 'top-right'); ?>>Top Right</option>
+                                        <option value="bottom-left" <?php selected(isset($fields['slideshow_positions'][$index]) ? $fields['slideshow_positions'][$index] : '', 'bottom-left'); ?>>Bottom Left
+                                        </option>
+                                        <option value="bottom-right" <?php selected(isset($fields['slideshow_positions'][$index]) ? $fields['slideshow_positions'][$index] : '', 'bottom-right'); ?>>Bottom Right
+                                        </option>
+                                        <option value="middle" <?php selected(isset($fields['slideshow_positions'][$index]) ? $fields['slideshow_positions'][$index] : '', 'middle'); ?>>Middle</option>
+                                    </select>
+
+                                </p>
+
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <button type="button" id="add-slide" class="button">Add New Slide</button>
+                </div>
+                <script>
+                    jQuery(document).ready(function ($) {
+                        // Add new slide
+                        $('#add-slide').click(function () {
+                            var newSlide = `
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="slideshow-item" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; display:flex; gap:20px">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <img src="" alt="Slideshow Image" style="max-width: 25%; height: 25%; margin-top: 10px;">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <p>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <label>Caption:</label><br>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="text" name="slideshow_captions[]" value="" style="width: 100%;">
+                             
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="hidden" name="slideshow_images[]" value="">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <button type="button" class="upload-image button" style="margin-top: 5px;">Upload Image</button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <button type="button" class="remove-slide button" style="width: 100px;height: 20px;margin-left: 5px;margin-top: 5px;">Remove Slide</button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </p>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <p>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <label>Position:</label><br>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <select name="slideshow_positions[]">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value=" ">Top Left</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="top-right">Top Right</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="bottom-left">Bottom Left</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="bottom-right">Bottom Right</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <option value="middle">Middle</option>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </select>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </p>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>`;
+                            $('#slideshow-items').append(newSlide);
+                        });
+
+                        // Remove slide
+                        $(document).on('click', '.remove-slide', function () {
+                            $(this).closest('.slideshow-item').remove();
+                        });
+
+                        // Image upload
+                        $(document).on('click', '.upload-image', function (e) {
+                            e.preventDefault();
+                            var button = $(this);
+                            var imageInput = button.prev('input');
+                            var previewImage = button.closest('.slideshow-item').find('img');
+
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                             var frame = wp.media({
                                 title: 'Select or Upload Image',
                                 button: {
@@ -778,8 +881,12 @@ function kingsland_tour_package_details_callback($post)
             <div id="itinerary" class="admon-css-tab-content">
 
                 <label for="itinerary">Itinerary:</label>
+<<<<<<< HEAD
                 <div class="itinerary-drag-drop">
                     <div id="itinerary-repeater">
+=======
+                <div id="itinerary-repeater">
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                     <?php
                     if (!empty($fields['itinerary']) && is_array($fields['itinerary'])) {
                         foreach ($fields['itinerary'] as $index => $day) {
@@ -789,7 +896,10 @@ function kingsland_tour_package_details_callback($post)
                             $day_tags = isset($day['day_tags']) ? implode(', ', $day['day_tags']) : '';
                             ?>
                             <div class="itinerary-item" style="margin-bottom: 10px">
+<<<<<<< HEAD
                                 <span class="drag-handle">⋮⋮</span>
+=======
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                                 <input type="text" name="itinerary[<?php echo $index; ?>][day_title]" placeholder="Day Title"
                                     value="<?php echo esc_attr($day_title); ?>" style="width: 100%; margin-bottom: 5px;" />
 
@@ -808,7 +918,10 @@ function kingsland_tour_package_details_callback($post)
                         // Default empty fields if no itinerary exists
                         ?>
                         <div class="itinerary-item" style="margin-bottom: 10px">
+<<<<<<< HEAD
                             <span class="drag-handle">⋮⋮</span>
+=======
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                             <input type="text" name="itinerary[0][day_title]" placeholder="Day Title" value=""
                                 style="width: 100%; margin-bottom: 5px;" />
 
@@ -823,6 +936,7 @@ function kingsland_tour_package_details_callback($post)
                         <?php
                     }
                     ?>
+<<<<<<< HEAD
                     </div>
                         <button type="button" id="add-itinerary-btn">Add Itinerary Day</button>
                 </div>
@@ -931,6 +1045,12 @@ jQuery(document).ready(function($) {
 </script>
             <!-- write css with js for itinerary-drag-drop -->
 
+=======
+                </div>
+                <button type="button" id="add-itinerary-btn">Add Itinerary Day</button>
+            </div>
+
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
             <div id="FAQs" class="admon-css-tab-content">
 
                 <label>FAQs:</label>
@@ -963,6 +1083,7 @@ jQuery(document).ready(function($) {
                 <button type="button" id="add-faq-btn">Add FAQ</button>
             </div>
             <div id="Hotels" class="admon-css-tab-content">
+<<<<<<< HEAD
 <!-- Published hotels list -->
            <div class="saved-hotels">
     <h3 style="text-align: center;">Saved Hotels from Published Posts</h3>
@@ -1063,6 +1184,9 @@ jQuery(document).ready(function($) {
         });
     });
 </script>
+=======
+
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                 <label>Hotels:</label>
                 <div id="hotels-repeater">
                     <?php
@@ -1098,11 +1222,19 @@ jQuery(document).ready(function($) {
                                 <input type="hidden" name="hotels[<?php echo $index; ?>][image]"
                                     value="<?php echo esc_attr($hotel['image']); ?>" />
                                 <select name="hotels[<?php echo $index; ?>][rating]" style="width: 20%; height:10%">
+<<<<<<< HEAD
                                     <option value="1" <?php selected($hotel['rating'], '1'); ?>>1 STAR</option>
                                     <option value="2" <?php selected($hotel['rating'], '2'); ?>>2 STAR</option>
                                     <option value="3" <?php selected($hotel['rating'], '3'); ?>>3 STAR</option>
                                     <option value="4" <?php selected($hotel['rating'], '4'); ?>>4 STAR</option>
                                     <option value="5" <?php selected($hotel['rating'], '5'); ?>>5 STAR</option>
+=======
+                                    <option value="1" <?php selected($hotel['rating'], '1'); ?>>1 Star</option>
+                                    <option value="2" <?php selected($hotel['rating'], '2'); ?>>2 Stars</option>
+                                    <option value="3" <?php selected($hotel['rating'], '3'); ?>>3 Stars</option>
+                                    <option value="4" <?php selected($hotel['rating'], '4'); ?>>4 Stars</option>
+                                    <option value="5" <?php selected($hotel['rating'], '5'); ?>>5 Stars</option>
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                                 </select>
                             </div>
                             <?php
@@ -1140,12 +1272,94 @@ jQuery(document).ready(function($) {
                     }
                     ?>
                 </div>
+<<<<<<< HEAD
                   <button type="button" id="add-hotel-btn">Add Hotel</button>
             </div>
 
             <div id="destinations" class="admon-css-tab-content">
                  <!-- Saved Destinations Section -->
                   <div class="saved-destinations">
+=======
+                <button type="button" id="add-hotel-btn">Add Hotel</button>
+            </div>
+
+            <div id="destinations" class="admon-css-tab-content">
+
+
+
+                <div class="destinations-container">
+                    <label><strong>Destinations:</strong></label>
+
+                    <div id="destinations-wrapper">
+                        <?php if ($fields['destinations'] && is_array($fields['destinations'])):
+                            foreach ($fields['destinations'] as $index => $destination):
+                                ?>
+                                <div class="destination-input-group">
+                                    <div class="destinations-flex">
+                                        <div class="image-preview">
+                                            <?php if (!empty($destination['image'])): ?>
+                                                <img src="<?php echo esc_url($destination['image']); ?>" />
+                                            <?php endif; ?>
+                                        </div>
+                                        <div style="width:78%">
+                                            <input type="text" name="destination[<?php echo $index; ?>][name]"
+                                                placeholder="Destination Name"
+                                                value="<?php echo esc_attr($destination['name']); ?>" />
+
+                                            <input type="text" name="destination[<?php echo $index; ?>][destination_url]"
+                                                placeholder="Destination URL"
+                                                value="<?php echo esc_attr($destination['destination_url']); ?>" />
+                                        </div>
+                                    </div>
+                                    <div class="des-button">
+                                        <input type="hidden" name="destination[<?php echo $index; ?>][image]"
+                                            value="<?php echo esc_attr($destination['image']); ?>"
+                                            class="destination-image-input" />
+
+                                        <button type="button" class="upload-destination-image">Upload Image</button>
+                                        <button type="button" class="remove-destination">Remove</button>
+                                    </div>
+                                </div>
+                            <?php endforeach;
+                        else: ?>
+                            <div class="destination-input-group">
+                                <div class="destinations-flex">
+                                    <div class="image-preview">
+                                        <img src="" style="display: none;">
+                                    </div>
+                                    <div class="destination-fields" style="width: 78%;">
+                                        <input type="text" 
+                                            name="destination[${destinationIndex}][name]" 
+                                            placeholder="Destination Name" 
+                                            value="" 
+                                            class="destination-name-input" />
+                                            
+                                        <input type="text" 
+                                            name="destination[${destinationIndex}][destination_url]" 
+                                            placeholder="Destination URL" 
+                                            value="" 
+                                            class="destination-url-input" />
+                                            
+                                        <input type="hidden" 
+                                            name="destination[${destinationIndex}][image]" 
+                                            value="" 
+                                            class="destination-image-input" />
+                                    </div>
+                                </div>
+                                <div class="des-button">
+                                    <button type="button" class="upload-destination-image">Upload Image</button>
+                                    <button type="button" class="remove-destination">Remove</button>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <button type="button" id="add-destination">Add Destination</button>
+                </div>
+
+                <!-- Saved Destinations Section -->
+<div class="saved-destinations">
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
     <h3 style="text-align: center;">Saved Destinations</h3>
     <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
         <?php
@@ -1212,6 +1426,7 @@ jQuery(document).ready(function($) {
         endif;
         ?>
     </div>
+<<<<<<< HEAD
                   </div>
                 <div class="destinations-container">
                     <label>Destinations:</label>
@@ -1290,6 +1505,14 @@ jQuery(document).ready(function($) {
 jQuery(document).ready(function($) {
     // Debug log
     // console.log('Initializing destination checkboxes');
+=======
+</div>
+
+<script>
+jQuery(document).ready(function($) {
+    // Debug log
+    console.log('Initializing destination checkboxes');
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
     
     $('.destination-checkbox').on('change', function() {
         var $this = $(this);
@@ -1297,7 +1520,11 @@ jQuery(document).ready(function($) {
         var url = $this.data('url');
         var image = $this.data('image');
         
+<<<<<<< HEAD
         // console.log('Checkbox changed:', name, this.checked);
+=======
+        console.log('Checkbox changed:', name, this.checked);
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
 
         if (this.checked) {
             addDestination(name, url, image);
@@ -1351,6 +1578,7 @@ jQuery(document).ready(function($) {
         });
     }
 });
+<<<<<<< HEAD
 jQuery(document).ready(function($) {
     // Add handler for remove button clicks
     $(document).on('click', '.remove-destination', function() {
@@ -1379,11 +1607,18 @@ jQuery(document).ready(function($) {
         reindexDestinations();
     }
 });
+=======
+</script>
+            </div>
+        <script>
+
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
 
 
             jQuery(document).ready(function ($) {
                 let destinationIndex = <?php echo !empty($fields['destinations']) ? count($fields['destinations']) : 1; ?>;
 
+<<<<<<< HEAD
             // Add new destination
             $('#add-destination').click(function () {
                 const html = `
@@ -1438,6 +1673,64 @@ jQuery(document).ready(function($) {
             });
         });
     </script>
+=======
+                // Add new destination
+                $('#add-destination').click(function () {
+                    const html = `
+<div class="destination-input-group" >
+<div class="destinations-flex">
+<div class="image-preview">
+<img src="" style="display: none;">
+</div>
+<div style="width:78%">
+<input type="text" name="destination[${destinationIndex}][name]" placeholder="Destination Name" value="" />
+<input type="text" name="destination[${destinationIndex}][destination_url]" placeholder="Destination URL" value="" />
+</div>
+</div>
+<div class="des-button">
+<input type="hidden" name="destination[${destinationIndex}][image]" value="" class="destination-image-input" />
+<button type="button" class="upload-destination-image">Upload Image</button>
+<button type="button" class="remove-destination">Remove</button>
+</div>
+</div>`;
+                    $('#destinations-wrapper').append(html);
+                    destinationIndex++;
+                });
+
+                // Remove destination
+                $(document).on('click', '.remove-destination', function () {
+                    $(this).closest('.destination-input-group').remove();
+                });
+
+                // Image upload
+                $(document).on('click', '.upload-destination-image', function (e) {
+                    e.preventDefault();
+                    const button = $(this);
+                    const container = button.closest('.destination-input-group');
+                    const imageInput = container.find('.destination-image-input');
+                    const imagePreview = container.find('.image-preview img');
+
+                    const frame = wp.media({
+                        title: 'Select Destination Image',
+                        button: {
+                            text: 'Use this image'
+                        },
+                        multiple: false
+                    });
+
+                    frame.on('select', function () {
+                        const attachment = frame.state().get('selection').first().toJSON();
+                        imageInput.val(attachment.url);
+                        imagePreview.attr('src', attachment.url).css('display', 'block');
+                    });
+
+                    frame.open();
+                });
+            });
+        </script>
+
+    </div>
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
     <!-- content area End -->
  
     <?php

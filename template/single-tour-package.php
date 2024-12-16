@@ -355,6 +355,7 @@ $package = [
             width: 300px;
             object-fit: cover;
         }
+<<<<<<< HEAD
 
         .whatsapp-btn {
             background: #128C7E !important;
@@ -379,6 +380,8 @@ $package = [
         .whatsapp-btn i {
             font-size: 20px;
         }
+=======
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
     </style>
     <?php
     // Get WhatsApp number from options
@@ -507,7 +510,11 @@ $package = [
 
 
                         <p>
+<<<<<<< HEAD
                         <h2 style="display:inline;"> Cities: </h2> <?php echo esc_html($package['location']); ?>
+=======
+                        <h2> Cities: </h2> <?php echo esc_html($package['location']); ?>
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                         </p>
                         <p>
                             <?php echo esc_html($package['duration']); ?>
@@ -559,7 +566,11 @@ $package = [
                             ?>
 
                         </span>
+<<<<<<< HEAD
                         <p>Double Sharing</p>
+=======
+                        <p>Per Person</p>
+>>>>>>> a857882d090fd13b7ad06441edcd6f1b4a080c45
                         <!-- <p class="rating">Rated <?php echo esc_html($package['rating']); ?> (based on reviews)</p> -->
                     </div>
                 </div>
